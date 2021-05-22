@@ -23,6 +23,14 @@ func main() {
 			return
 		}
 
+		app := &module.Application{
+			Plm:   plm,
+			Infra: infra,
+		}
+		if err = app.CreateApplication(); err != nil {
+			return
+		}
+
 		return
 	})
 }
