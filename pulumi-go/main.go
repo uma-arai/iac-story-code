@@ -1,20 +1,28 @@
 package main
 
 import (
-	"github.com/pulumi/pulumi-aws/sdk/v4/go/aws/s3"
+	"pulumi-go/configs"
+	"pulumi-go/pkg/module"
+	"pulumi-go/pkg/types"
+
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 func main() {
-	pulumi.Run(func(ctx *pulumi.Context) error {
-		// Create an AWS resource (S3 Bucket)
-		bucket, err := s3.NewBucket(ctx, "my-bucket", nil)
-		if err != nil {
-			return err
+	pulumi.Run(func(ctx *pulumi.Context) (err error) {
+		cfg := configs.NewConfig(ctx)
+		plm := types.Pulumi{
+			Ctx: ctx,
+			Cfg: &cfg,
 		}
 
-		// Export the name of the bucket
-		ctx.Export("bucketName", bucket.ID())
-		return nil
+		infra := &module.Infrastructure{
+			Plm: plm,
+		}
+		if err = infra.CreateInfrastructure(); err != nil {
+			return
+		}
+
+		return
 	})
 }

@@ -1,2 +1,4 @@
 config:
   aws:region: ap-northeast-1
+  cnis:project_name: CloudNativeIaCStory
+  cnis:resource_prefix: cnis
