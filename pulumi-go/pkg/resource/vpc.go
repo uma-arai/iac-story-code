@@ -25,8 +25,10 @@ type VpcMain struct {
 	Plm             types.Pulumi
 	Vpc             *ec2.Vpc
 	igw             *ec2.InternetGateway
-	SnPublicIngress map[string]SubnetInfo
-	rtCommon        routeTableInfo
+	SnPublicIngress map[string]*SubnetInfo
+	//SnPrivateApp    map[string]*SubnetInfo
+	rtPublic *routeTableInfo
+	//rtPrivate       *routeTableInfo
 }
 
 // CreateVpc creates main VPC resources.
@@ -61,9 +63,9 @@ func (v *VpcMain) CreateIgw() (err error) {
 
 // CreateCommonRouteTable creates common route table.
 func (v *VpcMain) CreateCommonRouteTable() (err error) {
-	v.rtCommon.routeId = "common"
-	rtName := v.Plm.Cfg.CnisResourcePrefix + "-rt-" + v.rtCommon.routeId
-	v.rtCommon.routeTable, err = ec2.NewRouteTable(v.Plm.Ctx, rtName, &ec2.RouteTableArgs{
+	routeId := "common"
+	rtName := v.Plm.Cfg.CnisResourcePrefix + "-rt-" + routeId
+	rt, err := ec2.NewRouteTable(v.Plm.Ctx, rtName, &ec2.RouteTableArgs{
 		VpcId: v.Vpc.ID(),
 		Routes: ec2.RouteTableRouteArray{
 			&ec2.RouteTableRouteArgs{
@@ -76,12 +78,16 @@ func (v *VpcMain) CreateCommonRouteTable() (err error) {
 	if err != nil {
 		return
 	}
+	v.rtPublic = &routeTableInfo{
+		routeId:    routeId,
+		routeTable: rt,
+	}
 
 	return
 }
 
 // associateIgwWithRouteTable associates subnet with route table.
-func (v *VpcMain) associateWithRouteTable(rt routeTableInfo, sn SubnetInfo) (err error) {
+func (v *VpcMain) associateWithRouteTable(rt *routeTableInfo, sn *SubnetInfo) (err error) {
 	name := v.Plm.Cfg.CnisResourcePrefix + "-rta-" + rt.routeId + "-" + sn.subnetId
 	_, err = ec2.NewRouteTableAssociation(v.Plm.Ctx, name, &ec2.RouteTableAssociationArgs{
 		SubnetId:     sn.subnet.ID(),
@@ -97,6 +103,21 @@ func (v *VpcMain) associateWithRouteTable(rt routeTableInfo, sn SubnetInfo) (err
 // CreatePublicSubnetIngress create public subnet for ingress resources.
 func (v *VpcMain) CreatePublicSubnetIngress(azId string, cidr string) (err error) {
 	subnetId := "public-ingress-" + azId
+	subnetInfo, err := v.createSubnet(subnetId, azId, cidr)
+	if err != nil {
+		return
+	}
+	v.SnPublicIngress[azId] = subnetInfo
+
+	if err = v.associateWithRouteTable(v.rtPublic, subnetInfo); err != nil {
+		return
+	}
+
+	return
+}
+
+// createSubnet is private function to create subnet.
+func (v *VpcMain) createSubnet(subnetId string, azId string, cidr string) (snInfo *SubnetInfo, err error) {
 	snName := v.Plm.Cfg.CnisResourcePrefix + "-subnet-" + subnetId
 	subnet, err := ec2.NewSubnet(v.Plm.Ctx, snName, &ec2.SubnetArgs{
 		CidrBlock:        pulumi.String(cidr),
@@ -107,15 +128,11 @@ func (v *VpcMain) CreatePublicSubnetIngress(azId string, cidr string) (err error
 	if err != nil {
 		return
 	}
-	subnetInfo := SubnetInfo{
+
+	snInfo = &SubnetInfo{
 		azId:     azId,
 		subnetId: subnetId,
 		subnet:   subnet,
-	}
-	v.SnPublicIngress[azId] = subnetInfo
-
-	if err = v.associateWithRouteTable(v.rtCommon, subnetInfo); err != nil {
-		return
 	}
 
 	return

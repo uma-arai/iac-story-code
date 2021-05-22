@@ -14,7 +14,7 @@ type Infrastructure struct {
 func (i *Infrastructure) CreateInfrastructure() (err error) {
 	vpcMain := &resource.VpcMain{
 		Plm:             i.Plm,
-		SnPublicIngress: make(map[string]resource.SubnetInfo),
+		SnPublicIngress: make(map[string]*resource.SubnetInfo),
 	}
 	if err = vpcMain.CreateVpc(); err != nil {
 		return
