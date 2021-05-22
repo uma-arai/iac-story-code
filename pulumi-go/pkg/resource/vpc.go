@@ -26,9 +26,10 @@ type VpcMain struct {
 	Vpc             *ec2.Vpc
 	igw             *ec2.InternetGateway
 	SnPublicIngress map[string]*SubnetInfo
-	//SnPrivateApp    map[string]*SubnetInfo
-	rtPublic *routeTableInfo
-	//rtPrivate       *routeTableInfo
+	SnPrivateApp    map[string]*SubnetInfo
+	SnPrivateEgress map[string]*SubnetInfo
+	rtPublic        *routeTableInfo
+	rtPrivate       *routeTableInfo
 }
 
 // CreateVpc creates main VPC resources.
@@ -61,9 +62,9 @@ func (v *VpcMain) CreateIgw() (err error) {
 	return
 }
 
-// CreateCommonRouteTable creates common route table.
-func (v *VpcMain) CreateCommonRouteTable() (err error) {
-	routeId := "common"
+// CreatePublicRouteTable creates route table for subnet to access internet.
+func (v *VpcMain) CreatePublicRouteTable() (err error) {
+	routeId := "public"
 	rtName := v.Plm.Cfg.CnisResourcePrefix + "-rt-" + routeId
 	rt, err := ec2.NewRouteTable(v.Plm.Ctx, rtName, &ec2.RouteTableArgs{
 		VpcId: v.Vpc.ID(),
@@ -79,6 +80,26 @@ func (v *VpcMain) CreateCommonRouteTable() (err error) {
 		return
 	}
 	v.rtPublic = &routeTableInfo{
+		routeId:    routeId,
+		routeTable: rt,
+	}
+
+	return
+}
+
+// CreateInternalRouteTable creates route table for the purpose of internal use.
+func (v *VpcMain) CreateInternalRouteTable() (err error) {
+	routeId := "internal"
+	rtName := v.Plm.Cfg.CnisResourcePrefix + "-rt-" + routeId
+	rt, err := ec2.NewRouteTable(v.Plm.Ctx, rtName, &ec2.RouteTableArgs{
+		VpcId: v.Vpc.ID(),
+		// TODO: add route list of VPC endpoint after creating it.
+		Tags: v.getTag(rtName),
+	}, pulumi.Parent(v.Vpc))
+	if err != nil {
+		return
+	}
+	v.rtPrivate = &routeTableInfo{
 		routeId:    routeId,
 		routeTable: rt,
 	}
@@ -112,6 +133,34 @@ func (v *VpcMain) CreatePublicSubnetIngress(azId string, cidr string) (err error
 	if err = v.associateWithRouteTable(v.rtPublic, subnetInfo); err != nil {
 		return
 	}
+
+	return
+}
+
+// CreatePrivateSubnetApp create private subnet for application.
+func (v *VpcMain) CreatePrivateSubnetApp(azId string, cidr string) (err error) {
+	subnetId := "private-app-" + azId
+	subnetInfo, err := v.createSubnet(subnetId, azId, cidr)
+	if err != nil {
+		return
+	}
+	v.SnPrivateApp[azId] = subnetInfo
+
+	if err = v.associateWithRouteTable(v.rtPrivate, subnetInfo); err != nil {
+		return
+	}
+
+	return
+}
+
+// CreatePrivateSubnetEgress create private subnet for egress resources.
+func (v *VpcMain) CreatePrivateSubnetEgress(azId string, cidr string) (err error) {
+	subnetId := "private-egress-" + azId
+	subnetInfo, err := v.createSubnet(subnetId, azId, cidr)
+	if err != nil {
+		return
+	}
+	v.SnPrivateEgress[azId] = subnetInfo
 
 	return
 }
