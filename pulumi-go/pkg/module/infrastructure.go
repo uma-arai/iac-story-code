@@ -49,6 +49,19 @@ func (i *Infrastructure) CreateInfrastructure() (err error) {
 		return
 	}
 
+	sg := &resource.SecurityGroup{
+		Plm: i.Plm,
+	}
+	if err = sg.CreateSecurityGroupPublicIngress(); err != nil {
+		return
+	}
+	if err = sg.CreateSecurityGroupPrivateApp(); err != nil {
+		return
+	}
+	if err = sg.CreateSecurityGroupPrivateEgress(); err != nil {
+		return
+	}
+
 	ecsApp := &resource.Ecs{
 		Plm:     i.Plm,
 		Cluster: make(map[string]*ecs.Cluster),
