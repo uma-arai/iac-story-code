@@ -3,11 +3,15 @@ package module
 import (
 	"pulumi-go/pkg/resource"
 	"pulumi-go/pkg/types"
+
+	"github.com/pulumi/pulumi-aws/sdk/v4/go/aws/ecs"
 )
 
 // Infrastructure holds attribute to create AWS foundation resources.
 type Infrastructure struct {
 	Plm types.Pulumi
+	Vpc resource.VpcMain
+	Ecs resource.Ecs
 }
 
 // CreateInfrastructure create AWS foundation resources.
@@ -25,7 +29,7 @@ func (i *Infrastructure) CreateInfrastructure() (err error) {
 		return
 	}
 	if err = vpcMain.CreateS3VpcEndpoint(); err != nil {
-		return err
+		return
 	}
 
 	if err = vpcMain.CreatePublicRouteTable(); err != nil {
@@ -42,6 +46,14 @@ func (i *Infrastructure) CreateInfrastructure() (err error) {
 		return
 	}
 	if err = vpcMain.CreatePrivateSubnetEgress("a", "10.0.240.0/24"); err != nil {
+		return
+	}
+
+	ecsApp := &resource.Ecs{
+		Plm:     i.Plm,
+		Cluster: make(map[string]*ecs.Cluster),
+	}
+	if err = ecsApp.CreateEcsCluster("app"); err != nil {
 		return
 	}
 
