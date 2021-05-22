@@ -96,14 +96,14 @@ func (v *VpcMain) associateWithRouteTable(rt routeTableInfo, sn SubnetInfo) (err
 
 // CreatePublicSubnetIngress create public subnet for ingress resources.
 func (v *VpcMain) CreatePublicSubnetIngress(azId string, cidr string) (err error) {
-	subnetId := "public-ingres-" + azId
+	subnetId := "public-ingress-" + azId
 	snName := v.Plm.Cfg.CnisResourcePrefix + "-subnet-" + subnetId
 	subnet, err := ec2.NewSubnet(v.Plm.Ctx, snName, &ec2.SubnetArgs{
 		CidrBlock:        pulumi.String(cidr),
 		VpcId:            v.Vpc.ID(),
 		AvailabilityZone: pulumi.String(v.Plm.Cfg.AwsRegion + azId),
 		Tags:             v.getTag(snName),
-	})
+	}, pulumi.Parent(v.Vpc), pulumi.DeleteBeforeReplace(true))
 	if err != nil {
 		return
 	}
