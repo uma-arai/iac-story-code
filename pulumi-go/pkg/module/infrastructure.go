@@ -18,6 +18,9 @@ func (i *Infrastructure) CreateInfrastructure() (err error) {
 	if err = vpcMain.CreateVpc(); err != nil {
 		return err
 	}
+	if err = vpcMain.CreateIgw(); err != nil {
+		return
+	}
 
 	return
 }
