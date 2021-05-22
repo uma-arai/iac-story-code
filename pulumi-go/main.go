@@ -27,7 +27,7 @@ func main() {
 			Plm:   plm,
 			Infra: infra,
 		}
-		if err = app.CreateApplication(); err != nil {
+		if err = app.CreateApplications(); err != nil {
 			return
 		}
 

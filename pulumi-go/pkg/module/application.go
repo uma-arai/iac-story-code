@@ -11,12 +11,33 @@ type Application struct {
 	Infra *Infrastructure
 }
 
-// CreateApplication create AWS application layer's resources.
-func (a *Application) CreateApplication() (err error) {
+// CreateApplications creates all applications.
+func (a *Application) CreateApplications() (err error) {
+	appIds := []string{
+		"app",
+	}
+	for _, id := range appIds {
+		if err = a.createApplication(id); err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+// createApplication creates AWS application layer's resources associated with application ID.
+func (a *Application) createApplication(appId string) (err error) {
 	ecrApp := &resource.Ecr{
 		Plm: a.Plm,
 	}
-	if err = ecrApp.CreateEcr("app"); err != nil {
+	if err = ecrApp.CreateEcr(appId); err != nil {
+		return
+	}
+
+	cwApp := &resource.CloudWatchForApp{
+		Plm: a.Plm,
+	}
+	if err = cwApp.CreateLogGroup(appId); err != nil {
 		return
 	}
 
