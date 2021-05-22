@@ -13,12 +13,19 @@ type Infrastructure struct {
 // CreateInfrastructure create AWS foundation resources.
 func (i *Infrastructure) CreateInfrastructure() (err error) {
 	vpcMain := &resource.VpcMain{
-		Plm: i.Plm,
+		Plm:             i.Plm,
+		SnPublicIngress: make(map[string]resource.SubnetInfo),
 	}
 	if err = vpcMain.CreateVpc(); err != nil {
-		return err
+		return
 	}
 	if err = vpcMain.CreateIgw(); err != nil {
+		return
+	}
+	if err = vpcMain.CreateCommonRouteTable(); err != nil {
+		return
+	}
+	if err = vpcMain.CreatePublicSubnetIngress("a", "10.0.0.0/24"); err != nil {
 		return
 	}
 
