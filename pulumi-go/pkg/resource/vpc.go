@@ -25,6 +25,7 @@ type VpcMain struct {
 	Plm             types.Pulumi
 	Vpc             *ec2.Vpc
 	igw             *ec2.InternetGateway
+	vpceS3          *ec2.VpcEndpoint
 	SnPublicIngress map[string]*SubnetInfo
 	SnPrivateApp    map[string]*SubnetInfo
 	SnPrivateEgress map[string]*SubnetInfo
@@ -87,6 +88,22 @@ func (v *VpcMain) CreatePublicRouteTable() (err error) {
 	return
 }
 
+// CreateS3VpcEndpoint create VPC Endpoint toward S3.
+func (v *VpcMain) CreateS3VpcEndpoint() (err error) {
+	vpceName := v.Plm.Cfg.CnisResourcePrefix + "-vpce-s3"
+	v.vpceS3, err = ec2.NewVpcEndpoint(v.Plm.Ctx, vpceName, &ec2.VpcEndpointArgs{
+		ServiceName:     pulumi.String("com.amazonaws." + v.Plm.Cfg.AwsRegion + ".s3"),
+		VpcId:           v.Vpc.ID(),
+		Tags:            v.getTag(vpceName),
+		VpcEndpointType: pulumi.String("Gateway"),
+	}, pulumi.Parent(v.Vpc))
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 // CreateInternalRouteTable creates route table for the purpose of internal use.
 func (v *VpcMain) CreateInternalRouteTable() (err error) {
 	routeId := "internal"
@@ -99,6 +116,16 @@ func (v *VpcMain) CreateInternalRouteTable() (err error) {
 	if err != nil {
 		return
 	}
+
+	rtVpceName := v.Plm.Cfg.CnisResourcePrefix + "-rta-" + routeId + "-vpce-s3"
+	_, err = ec2.NewVpcEndpointRouteTableAssociation(v.Plm.Ctx, rtVpceName, &ec2.VpcEndpointRouteTableAssociationArgs{
+		RouteTableId:  rt.ID(),
+		VpcEndpointId: v.vpceS3.ID(),
+	}, pulumi.Parent(rt))
+	if err != nil {
+		return
+	}
+
 	v.rtPrivate = &routeTableInfo{
 		routeId:    routeId,
 		routeTable: rt,

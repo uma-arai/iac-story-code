@@ -24,6 +24,9 @@ func (i *Infrastructure) CreateInfrastructure() (err error) {
 	if err = vpcMain.CreateIgw(); err != nil {
 		return
 	}
+	if err = vpcMain.CreateS3VpcEndpoint(); err != nil {
+		return err
+	}
 
 	if err = vpcMain.CreatePublicRouteTable(); err != nil {
 		return
