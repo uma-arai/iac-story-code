@@ -31,7 +31,7 @@ func (s *SecurityGroup) CreateSecurityGroupPublicIngress() (err error) {
 				Protocol: pulumi.String("tcp"),
 			},
 		},
-		Tags:  s.getTagWithName(sgName),
+		Tags:  s.Plm.GetTagWithName(sgName),
 		VpcId: s.Vpc.ID(),
 	})
 	if err != nil {
@@ -55,7 +55,7 @@ func (s *SecurityGroup) CreateSecurityGroupPrivateApp() (err error) {
 				Protocol: pulumi.String("tcp"),
 			},
 		},
-		Tags:  s.getTagWithName(sgName),
+		Tags:  s.Plm.GetTagWithName(sgName),
 		VpcId: s.Vpc.ID(),
 	})
 	if err != nil {
@@ -79,7 +79,7 @@ func (s *SecurityGroup) CreateSecurityGroupPrivateEgress() (err error) {
 				Protocol: pulumi.String("tcp"),
 			},
 		},
-		Tags:  s.getTagWithName(sgName),
+		Tags:  s.Plm.GetTagWithName(sgName),
 		VpcId: s.Vpc.ID(),
 	})
 	if err != nil {
@@ -87,12 +87,4 @@ func (s *SecurityGroup) CreateSecurityGroupPrivateEgress() (err error) {
 	}
 
 	return
-}
-
-// getTagWithName returns AWS tag information for Security Group resources.
-func (s *SecurityGroup) getTagWithName(name string) pulumi.StringMap {
-	return pulumi.StringMap{
-		"Name":    pulumi.String(name),
-		"Project": pulumi.String(s.Plm.Cfg.CnisProjectName),
-	}
 }

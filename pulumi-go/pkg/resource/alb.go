@@ -69,7 +69,7 @@ func (a *AlbCommon) createAlb(appId string) (err error) {
 			a.Subnets["a"].subnet.ID(),
 			a.Subnets["c"].subnet.ID(),
 		},
-		Tags: a.getTagWithName(albName),
+		Tags: a.Plm.GetTagWithName(albName),
 	}, pulumi.Parent(a.Vpc), pulumi.DeleteBeforeReplace(true))
 	if err != nil {
 		return
@@ -98,7 +98,7 @@ func (a *AlbCommon) createTargetGroup(appId string) (err error) {
 		Name:                       pulumi.String(tgName),
 		Port:                       pulumi.Int(80),
 		Protocol:                   pulumi.String("HTTP"),
-		Tags:                       a.getTagWithName(tgName),
+		Tags:                       a.Plm.GetTagWithName(tgName),
 		TargetType:                 pulumi.String("ip"),
 		VpcId:                      a.Vpc.ID(),
 	}, pulumi.Parent(a.Vpc), pulumi.DeleteBeforeReplace(true))
@@ -128,12 +128,4 @@ func (a *AlbCommon) createListener(appId string) (err error) {
 	}
 
 	return
-}
-
-// getTagWithName returns AWS tag information for VPC resources.
-func (a *AlbCommon) getTagWithName(name string) pulumi.StringMap {
-	return pulumi.StringMap{
-		"Name":    pulumi.String(name),
-		"Project": pulumi.String(a.Plm.Cfg.CnisProjectName),
-	}
 }
