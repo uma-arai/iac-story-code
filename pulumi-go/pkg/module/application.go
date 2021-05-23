@@ -41,5 +41,13 @@ func (a *Application) createApplication(appId string) (err error) {
 		return
 	}
 
+	albCommon := resource.NewAlb(a.Plm, a.Infra.Vpc.Vpc, a.Infra.Sg.PublicIngress, a.Infra.Vpc.SnPublicIngress)
+	albApp := &resource.AlbForApp{
+		AlbCommon: albCommon,
+	}
+	if err = albApp.CreateAlb(appId); err != nil {
+		return err
+	}
+
 	return
 }

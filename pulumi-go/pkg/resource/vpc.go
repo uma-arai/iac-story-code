@@ -40,7 +40,7 @@ func (v *VpcMain) CreateVpc() (err error) {
 		CidrBlock:          pulumi.String("10.0.0.0/16"),
 		EnableDnsHostnames: pulumi.Bool(true),
 		EnableDnsSupport:   pulumi.Bool(true),
-		Tags:               v.getTag(vpcName),
+		Tags:               v.getTagWithName(vpcName),
 	})
 	if err != nil {
 		return
@@ -54,7 +54,7 @@ func (v *VpcMain) CreateIgw() (err error) {
 	igwName := v.Plm.Cfg.CnisResourcePrefix + "-igw-main"
 	v.igw, err = ec2.NewInternetGateway(v.Plm.Ctx, igwName, &ec2.InternetGatewayArgs{
 		VpcId: v.Vpc.ID(),
-		Tags:  v.getTag(igwName),
+		Tags:  v.getTagWithName(igwName),
 	}, pulumi.Parent(v.Vpc))
 	if err != nil {
 		return
@@ -75,7 +75,7 @@ func (v *VpcMain) CreatePublicRouteTable() (err error) {
 				GatewayId: v.igw.ID(),
 			},
 		},
-		Tags: v.getTag(rtName),
+		Tags: v.getTagWithName(rtName),
 	}, pulumi.Parent(v.Vpc))
 	if err != nil {
 		return
@@ -94,7 +94,7 @@ func (v *VpcMain) CreateS3VpcEndpoint() (err error) {
 	v.vpceS3, err = ec2.NewVpcEndpoint(v.Plm.Ctx, vpceName, &ec2.VpcEndpointArgs{
 		ServiceName:     pulumi.String("com.amazonaws." + v.Plm.Cfg.AwsRegion + ".s3"),
 		VpcId:           v.Vpc.ID(),
-		Tags:            v.getTag(vpceName),
+		Tags:            v.getTagWithName(vpceName),
 		VpcEndpointType: pulumi.String("Gateway"),
 	}, pulumi.Parent(v.Vpc))
 	if err != nil {
@@ -111,7 +111,7 @@ func (v *VpcMain) CreateInternalRouteTable() (err error) {
 	rt, err := ec2.NewRouteTable(v.Plm.Ctx, rtName, &ec2.RouteTableArgs{
 		VpcId: v.Vpc.ID(),
 		// TODO: add route list of VPC endpoint after creating it.
-		Tags: v.getTag(rtName),
+		Tags: v.getTagWithName(rtName),
 	}, pulumi.Parent(v.Vpc))
 	if err != nil {
 		return
@@ -199,7 +199,7 @@ func (v *VpcMain) createSubnet(subnetId string, azId string, cidr string) (snInf
 		CidrBlock:        pulumi.String(cidr),
 		VpcId:            v.Vpc.ID(),
 		AvailabilityZone: pulumi.String(v.Plm.Cfg.AwsRegion + azId),
-		Tags:             v.getTag(snName),
+		Tags:             v.getTagWithName(snName),
 	}, pulumi.Parent(v.Vpc), pulumi.DeleteBeforeReplace(true))
 	if err != nil {
 		return
@@ -214,8 +214,8 @@ func (v *VpcMain) createSubnet(subnetId string, azId string, cidr string) (snInf
 	return
 }
 
-// getTag returns AWS tag information for VPC resources.
-func (v *VpcMain) getTag(name string) pulumi.StringMap {
+// getTagWithName returns AWS tag information for VPC resources.
+func (v *VpcMain) getTagWithName(name string) pulumi.StringMap {
 	return pulumi.StringMap{
 		"Name":    pulumi.String(name),
 		"Project": pulumi.String(v.Plm.Cfg.CnisProjectName),

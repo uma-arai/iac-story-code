@@ -11,6 +11,7 @@ import (
 // SecurityGroup holds attributes about Security Group.
 type SecurityGroup struct {
 	Plm           types.Pulumi
+	Vpc           *ec2.Vpc
 	PublicIngress *ec2.SecurityGroup
 	PrivateApp    *ec2.SecurityGroup
 	PrivateEgress *ec2.SecurityGroup
@@ -30,6 +31,8 @@ func (s *SecurityGroup) CreateSecurityGroupPublicIngress() (err error) {
 				Protocol: pulumi.String("tcp"),
 			},
 		},
+		Tags:  s.getTagWithName(sgName),
+		VpcId: s.Vpc.ID(),
 	})
 	if err != nil {
 		return
@@ -52,6 +55,8 @@ func (s *SecurityGroup) CreateSecurityGroupPrivateApp() (err error) {
 				Protocol: pulumi.String("tcp"),
 			},
 		},
+		Tags:  s.getTagWithName(sgName),
+		VpcId: s.Vpc.ID(),
 	})
 	if err != nil {
 		return
@@ -74,10 +79,20 @@ func (s *SecurityGroup) CreateSecurityGroupPrivateEgress() (err error) {
 				Protocol: pulumi.String("tcp"),
 			},
 		},
+		Tags:  s.getTagWithName(sgName),
+		VpcId: s.Vpc.ID(),
 	})
 	if err != nil {
 		return
 	}
 
 	return
+}
+
+// getTagWithName returns AWS tag information for Security Group resources.
+func (s *SecurityGroup) getTagWithName(name string) pulumi.StringMap {
+	return pulumi.StringMap{
+		"Name":    pulumi.String(name),
+		"Project": pulumi.String(s.Plm.Cfg.CnisProjectName),
+	}
 }
