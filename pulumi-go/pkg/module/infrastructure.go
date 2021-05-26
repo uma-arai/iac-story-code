@@ -29,7 +29,25 @@ func (i *Infrastructure) CreateInfrastructure() (err error) {
 	if err = vpcMain.CreateIgw(); err != nil {
 		return
 	}
+
+	sg := &resource.SecurityGroup{
+		Plm: i.Plm,
+		Vpc: vpcMain.Vpc,
+	}
+	if err = sg.CreateSecurityGroupPublicIngress(); err != nil {
+		return
+	}
+	if err = sg.CreateSecurityGroupPrivateApp(); err != nil {
+		return
+	}
+	if err = sg.CreateSecurityGroupPrivateEgress(); err != nil {
+		return
+	}
+
 	if err = vpcMain.CreateS3VpcEndpoint(); err != nil {
+		return
+	}
+	if err = vpcMain.CreateEcrVpcEndpoint(sg.PrivateEgress); err != nil {
 		return
 	}
 
@@ -56,20 +74,6 @@ func (i *Infrastructure) CreateInfrastructure() (err error) {
 		return
 	}
 	if err = vpcMain.CreatePrivateSubnetEgress("c", "10.0.241.0/24"); err != nil {
-		return
-	}
-
-	sg := &resource.SecurityGroup{
-		Plm: i.Plm,
-		Vpc: vpcMain.Vpc,
-	}
-	if err = sg.CreateSecurityGroupPublicIngress(); err != nil {
-		return
-	}
-	if err = sg.CreateSecurityGroupPrivateApp(); err != nil {
-		return
-	}
-	if err = sg.CreateSecurityGroupPrivateEgress(); err != nil {
 		return
 	}
 

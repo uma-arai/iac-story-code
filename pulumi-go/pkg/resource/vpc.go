@@ -88,7 +88,7 @@ func (v *VpcMain) CreatePublicRouteTable() (err error) {
 	return
 }
 
-// CreateS3VpcEndpoint create VPC Endpoint toward S3.
+// CreateS3VpcEndpoint creates VPC Endpoint toward to S3.
 func (v *VpcMain) CreateS3VpcEndpoint() (err error) {
 	vpceName := v.Plm.Cfg.CnisResourcePrefix + "-vpce-s3"
 	v.vpceS3, err = ec2.NewVpcEndpoint(v.Plm.Ctx, vpceName, &ec2.VpcEndpointArgs{
@@ -104,14 +104,28 @@ func (v *VpcMain) CreateS3VpcEndpoint() (err error) {
 	return
 }
 
+// CreateEcrVpcEndpoint creates VPC Endpoint toward to ECR.
+func (v *VpcMain) CreateEcrVpcEndpoint(sg *ec2.SecurityGroup) (err error) {
+	epList := map[string]string{
+		"ecr-api": "ecr.api",
+		"ecr-dkr": "ecr.dkr",
+	}
+	for epId, kind := range epList {
+		if err = v.createVpcEndpoint(epId, kind, sg); err != nil {
+			return
+		}
+	}
+
+	return err
+}
+
 // CreateInternalRouteTable creates route table for the purpose of internal use.
 func (v *VpcMain) CreateInternalRouteTable() (err error) {
 	routeId := "internal"
 	rtName := v.Plm.Cfg.CnisResourcePrefix + "-rt-" + routeId
 	rt, err := ec2.NewRouteTable(v.Plm.Ctx, rtName, &ec2.RouteTableArgs{
 		VpcId: v.Vpc.ID(),
-		// TODO: add route list of VPC endpoint after creating it.
-		Tags: v.Plm.GetTagWithName(rtName),
+		Tags:  v.Plm.GetTagWithName(rtName),
 	}, pulumi.Parent(v.Vpc))
 	if err != nil {
 		return
@@ -209,6 +223,30 @@ func (v *VpcMain) createSubnet(subnetId string, azId string, cidr string) (snInf
 		azId:     azId,
 		subnetId: subnetId,
 		subnet:   subnet,
+	}
+
+	return
+}
+
+// createVpcEndpoint is private common function to create VPC Endpoint(PrivateLink resources).
+func (v *VpcMain) createVpcEndpoint(vpceId string, kind string, sg *ec2.SecurityGroup) (err error) {
+	vpceName := v.Plm.Cfg.CnisResourcePrefix + "-vpce-" + vpceId
+	_, err = ec2.NewVpcEndpoint(v.Plm.Ctx, vpceName, &ec2.VpcEndpointArgs{
+		ServiceName:       pulumi.String("com.amazonaws." + v.Plm.Cfg.AwsRegion + "." + kind),
+		VpcId:             v.Vpc.ID(),
+		PrivateDnsEnabled: pulumi.Bool(true),
+		SecurityGroupIds: pulumi.StringArray{
+			sg.ID(),
+		},
+		SubnetIds: pulumi.StringArray{
+			v.SnPrivateEgress["a"].subnet.ID(),
+			v.SnPrivateEgress["c"].subnet.ID(),
+		},
+		Tags:            v.Plm.GetTagWithName(vpceName),
+		VpcEndpointType: pulumi.String("Interface"),
+	}, pulumi.Parent(v.Vpc))
+	if err != nil {
+		return
 	}
 
 	return
