@@ -116,7 +116,15 @@ func (v *VpcMain) CreateEcrVpcEndpoint(sg *ec2.SecurityGroup) (err error) {
 		}
 	}
 
-	return err
+	return
+}
+
+// CreateLogsVpcEndpoint creates VPC Endpoint toward to CloudWatch logs.
+func (v *VpcMain) CreateLogsVpcEndpoint(sg *ec2.SecurityGroup) (err error) {
+	if err = v.createVpcEndpoint("logs", "logs", sg); err != nil {
+		return
+	}
+	return
 }
 
 // CreateInternalRouteTable creates route table for the purpose of internal use.

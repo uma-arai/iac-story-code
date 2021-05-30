@@ -3,6 +3,8 @@ package module
 import (
 	"pulumi-go/pkg/resource"
 	"pulumi-go/pkg/types"
+
+	"github.com/pulumi/pulumi-aws/sdk/v4/go/aws/ecs"
 )
 
 // Application holds attribute to create AWS application layer's resources.
@@ -47,6 +49,25 @@ func (a *Application) createApplication(appId string) (err error) {
 	}
 	if err = albApp.CreateAlb(appId); err != nil {
 		return err
+	}
+
+	ecsApp := &resource.Ecs{
+		Plm:           a.Plm,
+		Cluster:       a.Infra.Ecs.Cluster,
+		Ecr:           ecrApp.Repository,
+		LogGroup:      cwApp.LogGroup,
+		SecurityGroup: a.Infra.Sg.PrivateApp,
+		Service:       make(map[string]*ecs.Service),
+		Subnets:       a.Infra.Vpc.SnPrivateApp,
+		TargetGroup:   albApp.TargetGroup,
+		TaskDef:       make(map[string]*ecs.TaskDefinition),
+		TaskExecRole:  a.Infra.TaskExecRole,
+	}
+	if err = ecsApp.CreateTaskDefinition(appId); err != nil {
+		return
+	}
+	if err = ecsApp.CreateService(appId); err != nil {
+		return
 	}
 
 	return

@@ -12,7 +12,14 @@ type Pulumi struct {
 	Cfg *configs.Config
 }
 
-// GetTagWithName returns AWS tag information.
+// GetTag returns AWS tag information.
+func (p *Pulumi) GetTag() pulumi.StringMap {
+	return pulumi.StringMap{
+		"Project": pulumi.String(p.Cfg.CnisProjectName),
+	}
+}
+
+// GetTagWithName returns AWS tag information with "Name" tag.
 func (p *Pulumi) GetTagWithName(name string) pulumi.StringMap {
 	return pulumi.StringMap{
 		"Name":    pulumi.String(name),

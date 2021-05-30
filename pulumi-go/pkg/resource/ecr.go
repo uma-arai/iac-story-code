@@ -9,18 +9,19 @@ import (
 
 // Ecr holds attribute for ECR.
 type Ecr struct {
-	Plm types.Pulumi
+	Plm        types.Pulumi
+	Repository *ecr.Repository
 }
 
 // CreateEcr create ECR resources.
 func (e *Ecr) CreateEcr(appId string) (err error) {
-	ecrName := e.Plm.Cfg.CnisResourcePrefix + "-ecr-" + appId
-	_, err = ecr.NewRepository(e.Plm.Ctx, ecrName, &ecr.RepositoryArgs{
+	reposName := e.Plm.Cfg.CnisResourcePrefix + "-ecr-" + appId
+	e.Repository, err = ecr.NewRepository(e.Plm.Ctx, reposName, &ecr.RepositoryArgs{
 		ImageScanningConfiguration: &ecr.RepositoryImageScanningConfigurationArgs{
 			ScanOnPush: pulumi.Bool(true),
 		},
 		ImageTagMutability: pulumi.String("IMMUTABLE"),
-		Name:               pulumi.String(ecrName),
+		Name:               pulumi.String(reposName),
 		Tags: pulumi.StringMap{
 			"Project": pulumi.String(e.Plm.Cfg.CnisProjectName),
 		},

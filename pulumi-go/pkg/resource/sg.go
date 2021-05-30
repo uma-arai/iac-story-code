@@ -31,6 +31,19 @@ func (s *SecurityGroup) CreateSecurityGroupPublicIngress() (err error) {
 				Protocol: pulumi.String("tcp"),
 			},
 		},
+		Egress: ec2.SecurityGroupEgressArray{
+			&ec2.SecurityGroupEgressArgs{
+				CidrBlocks: pulumi.StringArray{
+					pulumi.String("0.0.0.0/0"),
+				},
+				FromPort: pulumi.Int(0),
+				Ipv6CidrBlocks: pulumi.StringArray{
+					pulumi.String("::/0"),
+				},
+				Protocol: pulumi.String("-1"),
+				ToPort:   pulumi.Int(0),
+			},
+		},
 		Tags:  s.Plm.GetTagWithName(sgName),
 		VpcId: s.Vpc.ID(),
 	})
@@ -55,6 +68,19 @@ func (s *SecurityGroup) CreateSecurityGroupPrivateApp() (err error) {
 				Protocol: pulumi.String("tcp"),
 			},
 		},
+		Egress: ec2.SecurityGroupEgressArray{
+			&ec2.SecurityGroupEgressArgs{
+				CidrBlocks: pulumi.StringArray{
+					pulumi.String("0.0.0.0/0"),
+				},
+				FromPort: pulumi.Int(0),
+				Ipv6CidrBlocks: pulumi.StringArray{
+					pulumi.String("::/0"),
+				},
+				Protocol: pulumi.String("-1"),
+				ToPort:   pulumi.Int(0),
+			},
+		},
 		Tags:  s.Plm.GetTagWithName(sgName),
 		VpcId: s.Vpc.ID(),
 	})
@@ -77,6 +103,19 @@ func (s *SecurityGroup) CreateSecurityGroupPrivateEgress() (err error) {
 				FromPort: pulumi.Int(443),
 				ToPort:   pulumi.Int(443),
 				Protocol: pulumi.String("tcp"),
+			},
+		},
+		Egress: ec2.SecurityGroupEgressArray{
+			&ec2.SecurityGroupEgressArgs{
+				CidrBlocks: pulumi.StringArray{
+					pulumi.String("0.0.0.0/0"),
+				},
+				FromPort: pulumi.Int(0),
+				Ipv6CidrBlocks: pulumi.StringArray{
+					pulumi.String("::/0"),
+				},
+				Protocol: pulumi.String("-1"),
+				ToPort:   pulumi.Int(0),
 			},
 		},
 		Tags:  s.Plm.GetTagWithName(sgName),
