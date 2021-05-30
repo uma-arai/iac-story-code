@@ -6,6 +6,8 @@ import (
 	"pulumi-go/pkg/types"
 	"strings"
 
+	"github.com/pulumi/pulumi-aws/sdk/v4/go/aws/ssm"
+
 	"github.com/pulumi/pulumi-aws/sdk/v4/go/aws/alb"
 	"github.com/pulumi/pulumi-aws/sdk/v4/go/aws/cloudwatch"
 	"github.com/pulumi/pulumi-aws/sdk/v4/go/aws/ec2"
@@ -21,6 +23,7 @@ type Ecs struct {
 	Cluster       map[string]*ecs.Cluster
 	LogGroup      *cloudwatch.LogGroup
 	Ecr           *ecr.Repository
+	Parameter     *ssm.Parameter
 	SecurityGroup *ec2.SecurityGroup
 	Service       map[string]*ecs.Service
 	Subnets       map[string]*SubnetInfo
@@ -136,9 +139,10 @@ func (e *Ecs) replaceTaskParameter(appId string, taskDef string) (taskDefPlm pul
 	taskDef = strings.Replace(taskDef, "<AWS_ACCOUNT_ID>", e.Plm.Cfg.AwsAccountId, -1)
 	taskDef = strings.Replace(taskDef, "<AWS_REGION>", e.Plm.Cfg.AwsRegion, -1)
 
-	taskDefPlm = pulumi.All(e.Ecr.Name, e.LogGroup.Name).ApplyT(func(args []interface{}) string {
+	taskDefPlm = pulumi.All(e.Ecr.Name, e.LogGroup.Name, e.Parameter.Arn).ApplyT(func(args []interface{}) string {
 		taskDef = strings.Replace(taskDef, "<ECR_REPOS_NAME>", fmt.Sprint(args[0]), -1)
 		taskDef = strings.Replace(taskDef, "<LOG_GROUP>", fmt.Sprint(args[1]), -1)
+		taskDef = strings.Replace(taskDef, "<SSM_PARAM_TEST_ARN>", fmt.Sprint(args[2]), -1)
 		return taskDef
 	}).(pulumi.StringOutput)
 

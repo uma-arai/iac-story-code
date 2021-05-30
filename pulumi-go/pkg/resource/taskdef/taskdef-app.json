@@ -20,6 +20,12 @@
         "protocol": "tcp",
         "containerPort": 80
       }
+    ],
+    "secrets": [
+      {
+        "valueFrom": "<SSM_PARAM_TEST_ARN>",
+        "name": "SSM_PARAM_TEST"
+      }
     ]
   }
 ]

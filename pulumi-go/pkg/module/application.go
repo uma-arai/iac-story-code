@@ -48,7 +48,14 @@ func (a *Application) createApplication(appId string) (err error) {
 		AlbCommon: albCommon,
 	}
 	if err = albApp.CreateAlb(appId); err != nil {
-		return err
+		return
+	}
+
+	ssmApp := &resource.SsmForApp{
+		Plm: a.Plm,
+	}
+	if err = ssmApp.CreateParameter(appId); err != nil {
+		return
 	}
 
 	ecsApp := &resource.Ecs{
@@ -56,6 +63,7 @@ func (a *Application) createApplication(appId string) (err error) {
 		Cluster:       a.Infra.Ecs.Cluster,
 		Ecr:           ecrApp.Repository,
 		LogGroup:      cwApp.LogGroup,
+		Parameter:     ssmApp.Parameter,
 		SecurityGroup: a.Infra.Sg.PrivateApp,
 		Service:       make(map[string]*ecs.Service),
 		Subnets:       a.Infra.Vpc.SnPrivateApp,

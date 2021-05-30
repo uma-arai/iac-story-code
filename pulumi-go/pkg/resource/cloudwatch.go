@@ -7,7 +7,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-// CloudWatchForApp holds attributes to creating CloudWatch for Apps.
+// CloudWatchForApp holds attributes for creating CloudWatch for Apps.
 type CloudWatchForApp struct {
 	Plm      types.Pulumi
 	LogGroup *cloudwatch.LogGroup
@@ -19,9 +19,7 @@ func (c *CloudWatchForApp) CreateLogGroup(appId string) (err error) {
 	c.LogGroup, err = cloudwatch.NewLogGroup(c.Plm.Ctx, groupName, &cloudwatch.LogGroupArgs{
 		Name:            pulumi.String("/aws/ecs/" + groupName),
 		RetentionInDays: pulumi.Int(7),
-		Tags: pulumi.StringMap{
-			"Project": pulumi.String(c.Plm.Cfg.CnisProjectName),
-		},
+		Tags:            c.Plm.GetTag(),
 	})
 	if err != nil {
 		return
