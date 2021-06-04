@@ -3,6 +3,7 @@ locals {
   igw_prefix    = "${var.cnis_resource_prefix}-igw"
   subnet_prefix = "${var.cnis_resource_prefix}-subnet"
   rt_prefix     = "${var.cnis_resource_prefix}-rt"
+  vpce_prefix   = "${var.cnis_resource_prefix}-vpce"
 }
 
 resource "aws_vpc" "main" {
@@ -80,3 +81,32 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
   subnet_id      = aws_subnet.public_ingress[each.key].id
 }
+
+resource "aws_route_table" "internal" {
+  vpc_id = aws_vpc.main.id
+  tags = {
+    "Name"    = "${local.rt_prefix}-public"
+    "Project" = var.cnis_project_name
+  }
+}
+
+resource "aws_route_table_association" "internal_vpce_s3" {
+  for_each = var.aws_subnet_cidr_private_app
+
+  route_table_id = aws_route_table.internal.id
+  subnet_id      = aws_subnet.private_app[each.key].id
+}
+
+resource "aws_vpc_endpoint" "s3" {
+  route_table_ids = [
+    aws_route_table.internal.id
+  ]
+  service_name = "com.amazonaws.${var.aws_region}.s3"
+  tags = {
+    "Name"    = "${local.vpce_prefix}-s3"
+    "Project" = var.cnis_project_name
+  }
+  vpc_endpoint_type = "Gateway"
+  vpc_id            = aws_vpc.main.id
+}
+
