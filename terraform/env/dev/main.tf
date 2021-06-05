@@ -26,3 +26,12 @@ module "infrastructure" {
   cnis_project_name    = var.cnis_project_name
   cnis_resource_prefix = var.cnis_resource_prefix
 }
+
+module "application" {
+  source = "../../module/application"
+
+  aws_region = var.aws_region
+
+  cnis_project_name    = var.cnis_project_name
+  cnis_resource_prefix = var.cnis_resource_prefix
+}
