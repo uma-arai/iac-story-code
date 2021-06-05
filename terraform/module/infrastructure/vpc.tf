@@ -4,6 +4,11 @@ locals {
   subnet_prefix = "${var.cnis_resource_prefix}-subnet"
   rt_prefix     = "${var.cnis_resource_prefix}-rt"
   vpce_prefix   = "${var.cnis_resource_prefix}-vpce"
+
+  subnet_egress_list = [
+    for az_id in keys(var.aws_subnet_cidr_private_egress) :
+    aws_subnet.private_egress[az_id].id
+  ]
 }
 
 resource "aws_vpc" "main" {
@@ -110,3 +115,19 @@ resource "aws_vpc_endpoint" "s3" {
   vpc_id            = aws_vpc.main.id
 }
 
+resource "aws_vpc_endpoint" "vpce" {
+  for_each = var.aws_vpce_list
+
+  service_name        = "com.amazonaws.${var.aws_region}.${each.value}"
+  vpc_id              = aws_vpc.main.id
+  private_dns_enabled = true
+  security_group_ids = [
+    aws_security_group.private_egress.id
+  ]
+  subnet_ids = local.subnet_egress_list
+  tags = {
+    "Name"    = "${local.vpce_prefix}-${each.key}"
+    "Project" = var.cnis_project_name
+  }
+  vpc_endpoint_type = "Interface"
+}
