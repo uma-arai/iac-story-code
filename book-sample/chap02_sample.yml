@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Chapter02 Cloudformation network resource template
+Resources:
+  # VPCの設定
+  cnisVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: cnis-vpc
+
+  # Subnetの設定
+  cnisSubnetPublicIngress1A:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.0.0/24
+      VpcId:
+        Ref: cnisVpc
+      AvailabilityZone: 
+        Fn::Select: 
+          - 1
+          - Fn::GetAZs: ""
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: cnis-subnet
+
+  ## ルートテーブル
+  cnisRouteIngress:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: cnisVpc
+      Tags:
+        - Key: Name
+          Value: cnis-route-ingress
+
+  ## サブネットへルート紐付け
+  cnisRouteIngressAssociation1A:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: cnisRouteIngress
+      SubnetId:
+        Ref: cnisSubnetPublicIngress1A
+
+
+  # インターネットへ通信するためのゲートウェイの作成
+  cnisIgw:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: cnis-igw
+  cnisVpcgwAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: cnisVpc
+      InternetGatewayId:
+        Ref: cnisIgw
+
+  ## ルートテーブルのデフォルトルート
+  cnisRouteIngressDefault:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: cnisRouteIngress
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: cnisIgw
+    DependsOn:
+      - cnisVpcgwAttachment
+
