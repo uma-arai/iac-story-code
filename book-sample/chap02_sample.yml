@@ -20,10 +20,7 @@ Resources:
       CidrBlock: 10.0.0.0/24
       VpcId:
         Ref: cnisVpc
-      AvailabilityZone: 
-        Fn::Select: 
-          - 1
-          - Fn::GetAZs: ""
+      AvailabilityZone: ap-northeast-1c
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -37,7 +34,7 @@ Resources:
         Ref: cnisVpc
       Tags:
         - Key: Name
-          Value: cnis-route-ingress
+          Value: cnis-route-ingres
 
   ## サブネットへルート紐付け
   cnisRouteIngressAssociation1A:
