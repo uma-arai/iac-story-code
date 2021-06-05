@@ -30,7 +30,10 @@ module "infrastructure" {
 module "application" {
   source = "../../module/application"
 
-  aws_region = var.aws_region
+  aws_region                        = var.aws_region
+  aws_security_group_public_ingress = module.infrastructure.security_group_public_ingress
+  aws_subnet_public_ingress         = module.infrastructure.aws_subnet_public_ingress
+  aws_vpc_main                      = module.infrastructure.aws_vpc_main
 
   cnis_project_name    = var.cnis_project_name
   cnis_resource_prefix = var.cnis_resource_prefix

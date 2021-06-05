@@ -131,3 +131,14 @@ resource "aws_vpc_endpoint" "vpce" {
   }
   vpc_endpoint_type = "Interface"
 }
+
+output "aws_vpc_main" {
+  value = aws_vpc.main
+}
+
+output "aws_subnet_public_ingress" {
+  value = {
+    for subnet in aws_subnet.public_ingress :
+    subnet.availability_zone => subnet.id
+  }
+}
