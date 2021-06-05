@@ -19,6 +19,7 @@ variable "aws_vpce_list" {
     "ecr-api" : "ecr.api"
     "ecr-dkr" : "ecr.dkr"
     "logs" : "logs"
+    "ssm" : "ssm"
   }
 }
 

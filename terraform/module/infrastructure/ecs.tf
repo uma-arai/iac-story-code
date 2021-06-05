@@ -12,3 +12,7 @@ resource "aws_ecs_cluster" "app" {
     "Project" = var.cnis_project_name
   }
 }
+
+output "aws_ecs_cluster_app" {
+  value = aws_ecs_cluster.app
+}

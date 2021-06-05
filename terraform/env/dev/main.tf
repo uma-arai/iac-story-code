@@ -30,8 +30,13 @@ module "infrastructure" {
 module "application" {
   source = "../../module/application"
 
+  aws_ecs_cluster_app               = module.infrastructure.aws_ecs_cluster_app
+  aws_iam_ecs_task_execution_role   = module.infrastructure.aws_iam_ecs_task_execution_role
   aws_region                        = var.aws_region
   aws_security_group_public_ingress = module.infrastructure.security_group_public_ingress
+  aws_security_group_private_app    = module.infrastructure.security_group_private_app
+  aws_ssm_param_cnis_app            = module.infrastructure.aws_ssm_parameter_cnis_app
+  aws_subnet_private_app            = module.infrastructure.aws_subnet_private_app
   aws_subnet_public_ingress         = module.infrastructure.aws_subnet_public_ingress
   aws_vpc_main                      = module.infrastructure.aws_vpc_main
 

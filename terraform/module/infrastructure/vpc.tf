@@ -90,7 +90,7 @@ resource "aws_route_table_association" "public" {
 resource "aws_route_table" "internal" {
   vpc_id = aws_vpc.main.id
   tags = {
-    "Name"    = "${local.rt_prefix}-public"
+    "Name"    = "${local.rt_prefix}-internal"
     "Project" = var.cnis_project_name
   }
 }
@@ -139,6 +139,13 @@ output "aws_vpc_main" {
 output "aws_subnet_public_ingress" {
   value = {
     for subnet in aws_subnet.public_ingress :
+    subnet.availability_zone => subnet.id
+  }
+}
+
+output "aws_subnet_private_app" {
+  value = {
+    for subnet in aws_subnet.private_app :
     subnet.availability_zone => subnet.id
   }
 }
