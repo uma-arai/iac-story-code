@@ -1,0 +1,23 @@
+## cnis-app.yml
+AWSTemplateFormatVersion: "2010-09-09"
+Description: cnis-app.yml
+Parameters:
+  NetworkStackNameParameter:
+    Type: String
+    Description: Input newtork stack name
+Resources:
+  cnisAppServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: 
+        Fn::Select: 
+          - 0
+          - Fn::GetAZs: ""
+      ImageId: ami-0ca38c7440de1749a
+      InstanceType: t2.micro
+      SubnetId: 
+        Fn::ImportValue: 
+          !Sub "${NetworkStackNameParameter}-subnet"
+      Tags:
+        - Key: Name
+          Value: app-server

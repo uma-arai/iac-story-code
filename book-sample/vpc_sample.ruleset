@@ -1,0 +1,41 @@
+let aws_ec2_subnet_resources = Resources.*[ Type == 'AWS::EC2::Subnet' ]
+rule aws_ec2_subnet when %aws_ec2_subnet_resources !empty {
+  %aws_ec2_subnet_resources.Properties.CidrBlock == "10.0.0.0/24"
+  %aws_ec2_subnet_resources.Properties.VpcId == {"Ref":"cnisVpc"}
+  %aws_ec2_subnet_resources.Properties.MapPublicIpOnLaunch == true
+  %aws_ec2_subnet_resources.Properties.AvailabilityZone == {"Fn::Select":[1,{"Fn::GetAZs":""}]}
+  %aws_ec2_subnet_resources.Properties.Tags == [{"Key":"Name","Value":"cnis-subnet"}]
+}
+let aws_ec2_vpc_resources = Resources.*[ Type == 'AWS::EC2::VPC' ]
+rule aws_ec2_vpc when %aws_ec2_vpc_resources !empty {
+  %aws_ec2_vpc_resources.Properties.CidrBlock == "10.0.0.0/16"
+  %aws_ec2_vpc_resources.Properties.Tags == [{"Key":"Name","Value":"cnis-vpc"}]
+  %aws_ec2_vpc_resources.Properties.EnableDnsSupport == true
+  %aws_ec2_vpc_resources.Properties.InstanceTenancy == "default"
+  %aws_ec2_vpc_resources.Properties.EnableDnsHostnames == true
+}
+let aws_ec2_route_resources = Resources.*[ Type == 'AWS::EC2::Route' ]
+rule aws_ec2_route when %aws_ec2_route_resources !empty {
+  %aws_ec2_route_resources.Properties.DestinationCidrBlock == "0.0.0.0/0"
+  %aws_ec2_route_resources.Properties.GatewayId == {"Ref":"cnisIgw"}
+  %aws_ec2_route_resources.Properties.RouteTableId == {"Ref":"cnisRouteIngress"}
+}
+let aws_ec2_vpcgatewayattachment_resources = Resources.*[ Type == 'AWS::EC2::VPCGatewayAttachment' ]
+rule aws_ec2_vpcgatewayattachment when %aws_ec2_vpcgatewayattachment_resources !empty {
+  %aws_ec2_vpcgatewayattachment_resources.Properties.InternetGatewayId == {"Ref":"cnisIgw"}
+  %aws_ec2_vpcgatewayattachment_resources.Properties.VpcId == {"Ref":"cnisVpc"}
+}
+let aws_ec2_internetgateway_resources = Resources.*[ Type == 'AWS::EC2::InternetGateway' ]
+rule aws_ec2_internetgateway when %aws_ec2_internetgateway_resources !empty {
+  %aws_ec2_internetgateway_resources.Properties.Tags == [{"Key":"Name","Value":"cnis-igw"}]
+}
+let aws_ec2_routetable_resources = Resources.*[ Type == 'AWS::EC2::RouteTable' ]
+rule aws_ec2_routetable when %aws_ec2_routetable_resources !empty {
+  %aws_ec2_routetable_resources.Properties.Tags == [{"Key":"Name","Value":"cnis-route-ingress"}]
+  %aws_ec2_routetable_resources.Properties.VpcId == {"Ref":"cnisVpc"}
+}
+let aws_ec2_subnetroutetableassociation_resources = Resources.*[ Type == 'AWS::EC2::SubnetRouteTableAssociation' ]
+rule aws_ec2_subnetroutetableassociation when %aws_ec2_subnetroutetableassociation_resources !empty {
+  %aws_ec2_subnetroutetableassociation_resources.Properties.RouteTableId == {"Ref":"cnisRouteIngress"}
+  %aws_ec2_subnetroutetableassociation_resources.Properties.SubnetId == {"Ref":"cnisSubnetPublicIngress1A"}
+}

@@ -22,7 +22,7 @@ Resources:
         Ref: cnisVpc
       AvailabilityZone: 
         Fn::Select: 
-          - 1
+          - 0
           - Fn::GetAZs: ""
       MapPublicIpOnLaunch: true
       Tags:
@@ -75,4 +75,14 @@ Resources:
         Ref: cnisIgw
     DependsOn:
       - cnisVpcgwAttachment
-
+Outputs:
+  vpc:
+    Value:
+      Ref: cnisVpc
+    Export:
+      Name: !Sub ${AWS::StackName}-vpc
+  subnet:
+    Value:
+      Ref: cnisSubnetPublicIngress1A
+    Export:
+      Name: !Sub ${AWS::StackName}-subnet
