@@ -1,0 +1,261 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Network except for VPC by Cloud Native IaC Story 
+Parameters:
+  ResourcePrefix:
+    Type: String
+    Default: cnis
+  ProjectName:
+    Type: String
+    Default: CloudNativeIaCStory
+  # TODO: Sgは自動で持ってくるようにする
+  EgressSg:
+    Type: String
+    Description: Egress Security group id
+
+Resources:
+  # インターネットゲートウェイ設定
+  cnisIgw:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-igw-main
+  cnisVpcgwAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !ImportValue cnisVpc
+      InternetGatewayId:
+        Ref: cnisIgw
+
+  # Subnet設定
+  ## Ingressサブネット（パブリック）
+  cnisSubnetPublicIngress1A:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.0.0/24
+      VpcId: !ImportValue cnisVpc
+      AvailabilityZone: 
+        Fn::Select: 
+          - 0
+          - Fn::GetAZs: ""
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-subnet-public-ingress-a
+        - Key: Project
+          Value: !Ref ProjectName
+  cnisSubnetPublicIngress1C:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.1.0/24
+      VpcId: !ImportValue cnisVpc
+      AvailabilityZone: 
+        Fn::Select: 
+          - 1
+          - Fn::GetAZs: ""
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-subnet-public-ingress-c
+        - Key: Project
+          Value: !Ref ProjectName
+  ## Appサブネット（プライベート）
+  cnisSubnetPrivateApp1A:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.8.0/24
+      VpcId: !ImportValue cnisVpc
+      AvailabilityZone: 
+        Fn::Select: 
+          - 0
+          - Fn::GetAZs: ""
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-subnet-private-app-a
+        - Key: Project
+          Value: !Ref ProjectName
+  cnisSubnetPrivateApp1C:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.9.0/24
+      VpcId: !ImportValue cnisVpc
+      AvailabilityZone: 
+        Fn::Select: 
+          - 1
+          - Fn::GetAZs: ""
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-subnet-private-app-c
+        - Key: Project
+          Value: !Ref ProjectName
+  ## Egressサブネット（プライベート）
+  cnisSubnetPrivateEgress1A:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.240.0/24
+      VpcId: !ImportValue cnisVpc
+      AvailabilityZone: 
+        Fn::Select: 
+          - 0
+          - Fn::GetAZs: ""
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-subnet-private-egress-a
+        - Key: Project
+          Value: !Ref ProjectName
+  cnisSubnetPrivateEgress1C:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.241.0/24
+      VpcId: !ImportValue cnisVpc
+      AvailabilityZone: 
+        Fn::Select: 
+          - 1
+          - Fn::GetAZs: ""
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-subnet-private-egress-c
+        - Key: Project
+          Value: !Ref ProjectName          
+
+  # ルートテーブルの設定
+  ## パブリック向けルートテーブル
+  cnisRoutePublic:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !ImportValue cnisVpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-rt-public
+        - Key: Project
+          Value: !Ref ProjectName  
+  cnisRouteIngressAssociation1A:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: cnisRoutePublic
+      SubnetId:
+        Ref: cnisSubnetPublicIngress1A
+  cnisRouteIngressAssociation1C:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: cnisRoutePublic
+      SubnetId:
+        Ref: cnisSubnetPublicIngress1C
+  cnisRouteIngressDefault:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: cnisRoutePublic
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: cnisIgw
+    DependsOn:
+      - cnisVpcgwAttachment
+  ## プライベート向けルートテーブル
+  cnisRouteInternal:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !ImportValue cnisVpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-rt-internal
+        - Key: Project
+          Value: !Ref ProjectName  
+  cnisRouteInternalAssociation1A:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: cnisRouteInternal
+      SubnetId:
+        Ref: cnisSubnetPrivateApp1A
+  cnisRouteInternalAssociation1C:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: cnisRouteInternal
+      SubnetId:
+        Ref: cnisSubnetPrivateApp1C
+
+  # VPC Endpoint
+  ## Gateway
+  cnisVpceS3:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      RouteTableIds:
+        - !Ref cnisRouteInternal
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
+      VpcEndpointType: Gateway
+      VpcId: !ImportValue cnisVpc
+  ## Interface
+  cnisVpceEcrApi:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - !Ref EgressSg
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ecr.api"
+      SubnetIds:
+        - !Ref cnisSubnetPrivateEgress1A
+        - !Ref cnisSubnetPrivateEgress1C
+      VpcEndpointType: Interface
+      VpcId: !ImportValue cnisVpc
+  cnisVpceEcrDkr:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - !Ref EgressSg
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ecr.dkr"
+      SubnetIds:
+        - !Ref cnisSubnetPrivateEgress1A
+        - !Ref cnisSubnetPrivateEgress1C
+      VpcEndpointType: Interface
+      VpcId: !ImportValue cnisVpc
+  cnisVpceLogs:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - !Ref EgressSg
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.logs"
+      SubnetIds:
+        - !Ref cnisSubnetPrivateEgress1A
+        - !Ref cnisSubnetPrivateEgress1C
+      VpcEndpointType: Interface
+      VpcId: !ImportValue cnisVpc
+  cnisVpceEcrSsm:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - !Ref EgressSg
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssm"
+      SubnetIds:
+        - !Ref cnisSubnetPrivateEgress1A
+        - !Ref cnisSubnetPrivateEgress1C
+      VpcEndpointType: Interface
+      VpcId: !ImportValue cnisVpc
+
+Outputs:
+  ingressSubnet1A:
+    Value: !Ref cnisSubnetPublicIngress1A
+    Export:
+      Name: !Sub ${AWS::StackName}-public-ingress-subnet-a
+  ingressSubnet1C:
+    Value: !Ref cnisSubnetPublicIngress1C
+    Export:
+      Name: !Sub ${AWS::StackName}-public-ingress-subnet-c
+  appSubnet1A:
+    Value: !Ref cnisSubnetPrivateApp1A
+    Export:
+      Name: !Sub ${AWS::StackName}-private-app-subnet-a
+  appSubnet1C:
+    Value: !Ref cnisSubnetPrivateApp1C
+    Export:
+      Name: !Sub ${AWS::StackName}-private-app-subnet-c

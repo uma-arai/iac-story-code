@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: VPC Stack by Cloud Native IaC Story 
+Parameters:
+  ResourcePrefix:
+    Type: String
+    Default: cnis
+  ProjectName:
+    Type: String
+    Default: CloudNativeIaCStory
+  # TODO: Importする
+  VpcId:
+    Type: String
+    Description: ID for VPC.
+
+Resources:
+  # Ingress用セキュリティグループ
+  publicIngressSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${ResourcePrefix}-sg-public-ingress
+      GroupDescription: HTTP for ingress
+      VpcId: !Ref VpcId 
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: '0.0.0.0/0'
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-sg-public-ingress
+        - Key: Project
+          Value: !Ref ProjectName
+
+  # App用セキュリティグループ
+  privateAppSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${ResourcePrefix}-sg-private-app
+      GroupDescription: HTTP for app
+      VpcId: !Ref VpcId 
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-sg-private-app
+        - Key: Project
+          Value: !Ref ProjectName
+  privateAppIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      GroupId: !Ref privateAppSg
+      SourceSecurityGroupId: !Ref publicIngressSg
+
+  # VPCエンドポイント用セキュリティグループ
+  privateEgressSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${ResourcePrefix}-sg-private-egress
+      GroupDescription: HTTPS for vpc endpoint
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-sg-private-egress
+        - Key: Project
+          Value: !Ref ProjectName
+  privateEgressIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      GroupId: !Ref privateEgressSg
+      SourceSecurityGroupId: !Ref privateAppSg
+
+Outputs:
+  publicIngressSg:
+    Value: !Ref publicIngressSg
+  privateAppSg:
+    Value: !Ref privateAppSg

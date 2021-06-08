@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Chapter02 Cloudformation security group template
+Resources:
+  cnisSgA:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: cnis-sg-a
+      GroupDescription: security group A
+      VpcId: !ImportValue cnis-base-vpc
+      SecurityGroupIngress:
+        - FromPort: 8080
+          IpProtocol: tcp
+          SourceSecurityGroupId: !Ref cnisSgB
+          ToPort: 8080
+  cnisSgB:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: cnis-sg-b
+      GroupDescription: security group B
+      VpcId: !ImportValue cnis-base-vpc
+      SecurityGroupIngress:
+        - FromPort: 8080
+          IpProtocol: tcp
+          SourceSecurityGroupId: !Ref cnisSgA
+          ToPort: 8080
