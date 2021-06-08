@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Systems Manager infra stack by Cloud Native IaC Story 
+Parameters:
+  ResourcePrefix:
+    Type: String
+    Default: cnis
+
+Resources:
+  cnisSsmParams:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub ${ResourcePrefix}-ssm-param-cnis-app
+      Type: String
+      Value: "Cloud Native IaC Story"
+
+Outputs:
+  ecsCluster:
+    Value: !Ref cnisSsmParams
+    Export:
+      Name: !Sub ${ResourcePrefix}-ssm-param
+

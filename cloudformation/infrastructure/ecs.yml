@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ECS infra stack by Cloud Native IaC Story 
+Parameters:
+  ResourcePrefix:
+    Type: String
+    Default: cnis
+  ProjectName:
+    Type: String
+    Default: CloudNativeIaCStory
+
+Resources:
+  cnisEcsCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub ${ResourcePrefix}-ecs-cluster-app
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+Outputs:
+  ecsCluster:
+    Value: !Ref cnisEcsCluster
+    Export:
+      Name: !Sub ${ResourcePrefix}-ecs-cluster-app
+
