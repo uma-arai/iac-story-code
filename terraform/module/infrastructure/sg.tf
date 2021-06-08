@@ -74,11 +74,3 @@ resource "aws_security_group" "private_egress" {
     "Project" : var.cnis_project_name
   }
 }
-
-output "security_group_public_ingress" {
-  value = aws_security_group.public_ingress
-}
-
-output "security_group_private_app" {
-  value = aws_security_group.private_app
-}

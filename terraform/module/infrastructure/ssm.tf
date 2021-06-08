@@ -10,7 +10,3 @@ resource "aws_ssm_parameter" "cnis_app" {
     "Project" : var.cnis_project_name
   }
 }
-
-output "aws_ssm_parameter_cnis_app" {
-  value = aws_ssm_parameter.cnis_app
-}

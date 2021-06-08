@@ -42,7 +42,3 @@ data "aws_iam_policy_document" "ecs_task_execution_policy" {
     resources = ["*"]
   }
 }
-
-output "aws_iam_ecs_task_execution_role" {
-  value = aws_iam_role.ecs_task_execution
-}
