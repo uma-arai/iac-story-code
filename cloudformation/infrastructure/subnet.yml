@@ -246,16 +246,16 @@ Outputs:
   ingressSubnet1A:
     Value: !Ref cnisSubnetPublicIngress1A
     Export:
-      Name: !Sub ${AWS::StackName}-public-ingress-subnet-a
+      Name: !Sub ${ResourcePrefix}-public-ingress-subnet-a
   ingressSubnet1C:
     Value: !Ref cnisSubnetPublicIngress1C
     Export:
-      Name: !Sub ${AWS::StackName}-public-ingress-subnet-c
+      Name: !Sub ${ResourcePrefix}-public-ingress-subnet-c
   appSubnet1A:
     Value: !Ref cnisSubnetPrivateApp1A
     Export:
-      Name: !Sub ${AWS::StackName}-private-app-subnet-a
+      Name: !Sub ${ResourcePrefix}-private-app-subnet-a
   appSubnet1C:
     Value: !Ref cnisSubnetPrivateApp1C
     Export:
-      Name: !Sub ${AWS::StackName}-private-app-subnet-c
+      Name: !Sub ${ResourcePrefix}-private-app-subnet-c
