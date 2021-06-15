@@ -12,7 +12,7 @@
 |CloudFormation|YAML|[cloudformation](./cloudformation)|
 |CDK|TypeScript|[cdk-typescript](./cdk-typescript)|
 |Terraform|HCL|[terraform](./terraform)|
-|Pulumi|Go|[pulumi-go](./go)|
+|Pulumi|Go|[pulumi-go](./pulumi-go)|
 
 ## サンプルコードの動作環境・バージョン情報
 
