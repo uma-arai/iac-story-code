@@ -70,12 +70,12 @@
 - AWSアカウントを所有していること
 - AdministratorAccessポリシー相当のIAMユーザもしくはIAMロールで作業可能なこと
 
-## 事前準備
+### 事前準備
 
 IaCサービスの実行はAWS Cloud9上で行います。
 ここではCloud9の作成と関連するセットアップ手順を記載します。
 
-### Amazon Cloud9の作成
+#### Amazon Cloud9の作成
 
 1. AWSマネジメントコンソール上部の [サービス] タブより [Cloud9] を選択します。
 2. Cloud9ダッシュボードの左側ナビゲーションメニューから [Account environments] を選択し、[Create environment] ボタンを押します。
@@ -106,7 +106,7 @@ IaCサービスの実行はAWS Cloud9上で行います。
 
 <img src="./images/cloud9-main.png">
 
-### インスタンスプロファイルのアタッチ
+#### インスタンスプロファイルのアタッチ
 
 Cloud9ではマネジメントコンソールにログインしたIAMユーザーの権限で自動的に認証権限が設定される仕組みを持っています。
 これは AWS Managed Temporary Credentials(以降「AMTC」と略します) と呼ばれています。
@@ -141,7 +141,7 @@ IAMロール等の付与等も不要であるため便利なのですが、以�
 
 7. IAMダッシュボードのロール一覧から [CnisCloud9PlayGroundRole] が作成されていることを確認してください。
 
-### インスタンスプロファイルの付与
+#### インスタンスプロファイルの付与
 
 ここでは前手順で作成した CnisCloud9PlayGroundRole をEC2インスタンスにアタッチしていきます。
 
@@ -152,7 +152,7 @@ IAMロール等の付与等も不要であるため便利なのですが、以�
 5. IAM ロールオペレーションに成功した旨が表示されます。[閉じる] ボタンを押し、 EC2の設定内容を確認します。
 6. インスタンス情報の[セキュリティ]タブ内 [IAMロール] に [CnisCloud9PlayGroundRole] が表示されれば、関連付けが完了となります。
 
-### AMTCの無効化
+#### AMTCの無効化
 
 EC2にアタッチしたIAMロールの適用を優先させるためにAMTCを無効化する必要があります。
 
@@ -164,6 +164,35 @@ EC2にアタッチしたIAMロールの適用を優先させるためにAMTCを�
 <img src="./images/cloud9-amtc-off.png">
 
 以上により、Cloud9環境が整いました。
+
+#### 各種ツールのインストール
+
+以下をインストールしておきます。
+```
+$ sudo yum -y install tree
+```
+
+
+### リポジトリの取得
+
+Cloud9上で実行する本リポジトリを取得します。
+
+1. Cloud9 IDEを開き、画面下部のコマンドラインにて以下を入力します。
+
+```
+$ git clone https://github.com/uma-arai/iac-story-code
+Cloning into 'iac-story-code'...
+:
+Resolving deltas: 100% (172/172), done.
+```
+
+2. リポジトリがクローンされていることを確認します。
+```
+$ iac-story-code/
+$ tree .
+```
+
+これで各サンプルコードを実行する準備が出来ました。
 
 ## 各IaCサービスのハンズオン
 
