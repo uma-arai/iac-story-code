@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: IAM for infra stack by Cloud Native IaC Story 
+Parameters:
+  ProjectName:
+    Type: String
+    Default: CloudNativeIaCStory
+
+Resources:
+  # IAMロール
+  ecsTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "ecs-tasks.amazonaws.com"
+            Action: "sts:AssumeRole"
+      RoleName: CnisECSTaskExecutionRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+  # IAMポリシー
+  ecsTaskExecutionPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: CnisECSTaskExecutionPolicy
+      PolicyDocument: 
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "ssm:GetParameters"
+            Resource: "*"
+      Roles:
+        - !Ref ecsTaskExecutionRole
+
+Outputs:
+  ecsTaskExecutionRole:
+    Value: !Ref ecsTaskExecutionRole
+    Export: 
+      Name: ecsTaskExecutionRole

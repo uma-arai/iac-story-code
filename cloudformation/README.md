@@ -1,5 +1,6 @@
 # CloudFormation 
 
+//TODO: Nested stackにする
 ## セットアップ
 
 ## 前提事項
