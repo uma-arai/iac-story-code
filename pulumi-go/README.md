@@ -1,28 +1,37 @@
+# Pulumiサンプルコード
+
+## Overview
+ここではGo言語によるPulumiのサンプルコードを提供します。
+以下README.mdの内容に従って、pulumiを実行することができます。
+
+## 前提事項
+- リポジトリ直下のREADME.mdによる環境準備が完了していること。
+
 ## アカウント作成
 
-Pulumiのアカウントを所有していない方のみ実施。
+Pulumiでは利用前にPulumiアカウントの登録が必要です。
+Pulumiのアカウントを所有していない方は以下手順に従って作成しましょう。
 
 1. [Pulumi]https://app.pulumi.com/signup)のWebサイトに移動
-2. GitHub, GitLab, Atlassian, Emailのいずれかでサインアップを行う
-  - Full Name, Username, Email, Password
-
-3. 以下の画面に遷移
-
-
-4. Settingsメニュー
-5. Access Tokens
-
-6. descriptionにhandsonと入力
+2. GitHub, GitLab, Atlassian, Emailのいずれかでサインアップを行う。
+3. サインアップ後、[Settings] → [Access Tokens] に移動
+4. [Create token]ボタンを押下し、表示されたポップアップ画面にてdescriptionに`handson`と入力後、[Create token]ボタンを押下
+5. 作成されたAccess Tokens情報を控えておく。
 
 ## セットアップ
 
+次にPulumiを実行するための各種インストールを行います。
+
 ### Pulumiのインストール
+
+1. Cloud9 IDEを開き、画面下部のコマンドラインにて以下を入力。
+
 ```bash
 # Pulumiのバイナリダウンロード
 $ wget https://get.pulumi.com/releases/sdk/pulumi-v3.4.0-linux-x64.tar.gz
 
 # 展開してバイナリを配置&ゴミ消し
-tar zxvf pulumi-v3.4.0-linux-x64.tar.gz; sudo mv pulumi/pulumi /usr/local/bin/ && rm -rf pulumi/ && rm -f pulumi-v3.4.0-linux-x64.tar.gz 
+tar zxvf pulumi-v3.4.0-linux-x64.tar.gz; sudo mv -f pulumi/* /usr/local/bin/ && rm -rf pulumi/ && rm -f pulumi-v3.4.0-linux-x64.tar.gz 
 
 # バージョン確認
 $ pulumi version
@@ -30,6 +39,8 @@ v3.4.0
 ```
 
 ### Goのインストール
+
+1. Cloud9 IDEを開き、画面下部のコマンドラインにて以下を入力。
 
 ```bash
 # Goバイナリのダウンロード
@@ -46,18 +57,26 @@ echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bash_profile && echo "alias go=
 go version go1.16.5 linux/amd64
 ```
 
+以上でPulumiを実行するための環境が整いました。
+
 ## Pulumiの実行
+
+では実際にサンプルコードでPulumiによるAWSリソースを作成してみましょう。
+
+1. Cloud9 IDEを開き、画面下部のコマンドラインにて以下を入力。
 ```bash
+# 作業ディレクトリへ移動
 $ cd ~/environment/iac-story-code/pulumi-go/
 
+# pulumiへのログイン
 $ pulumi login 
 Manage your Pulumi stacks by logging in.
 Run `pulumi login --help` for alternative login options.
 Enter your access token from https://app.pulumi.com/account/tokens
     or hit <ENTER> to log in using your browser                   : 
 
-# 先程メモしたPulumi Access Tokenを入力
-# 以下のように出力された成功
+# 先程メモしたPulumi Access Tokenを入力してください。
+# 以下のように出力されたら成功です。
 
   Welcome to Pulumi!
 
@@ -80,16 +99,16 @@ This command will walk you through creating a new Pulumi project.
 Enter a value or leave blank to accept the (default), and press <ENTER>.
 Press ^C at any time to quit.
 
-project name: (pulumi-go) 
+project name: (pulumi-go) 	   # プロジェクト名の入力（デフォルトでOK）
 project description: (A minimal AWS Go Pulumi program) 
-Created project 'pulumi-go'
+Created project 'pulumi-go'	
 
 Please enter your desired stack name.
 To create a stack in an organization, use the format <org-name>/<stack-name> (e.g. `acmecorp/dev`).
 stack name: (dev) main
-Created stack 'main'
+Created stack 'main'            # スタック名の入力（mainと入力すること）
 
-aws:region: The AWS region to deploy into: (us-east-1) ap-northeast-1
+aws:region: The AWS region to deploy into: (us-east-1) ap-northeast-1    # リージョンを入力(ap-northeast-1と入力すること)
 Saved config
 
 Installing dependencies...
@@ -100,15 +119,122 @@ Your new project is ready to go!
 
 To perform an initial deployment, run 'pulumi up'
 
-# ファイル戻し
-git checkout
+# pulumiプロジェクトを作成した際、いくつかのファイルが更新されてしまうので、checkoutで戻しておく
+$ git checkout Pulumi.main.yaml go.mod main.go
 
-go mod download github.com/pulumi/pulumi-aws/sdk/v4
 
-# Pulumiのpreview
+# 実行前にPreviewで確認。プロバイダーのダウンロードに少し時間がかかります。
+$ pulumi preview
+Previewing update (main)
+
+View Live: https://app.pulumi.com/m-arai/pulumi-go/main/previews/568ed8a3-25b0-44bd-bf25-74e9b5036d5a
+
+[resource plugin aws-4.7.0] installing
+Downloading plugin: 75.17 MiB / 75.17 MiB [=========================] 100.00% 1s
+     Type                                               Name                                               Plan       
+ +   pulumi:pulumi:Stack                                pulumi-go-main                                     create     
+ +   ├─ aws:ecs:Cluster                                 cnis-ecs-cluster-app                               create     
+ +   │  └─ aws:ecs:Service                              cnis-ecs-service-app                               create     
+ +   ├─ aws:ec2:Vpc                                     cnis-vpc-main                                      create     
+ +   │  ├─ aws:ec2:Subnet                               cnis-subnet-private-app-c                          create     
+ +   │  ├─ aws:ec2:RouteTable                           cnis-rt-internal                                   create     
+ +   │  │  ├─ aws:ec2:RouteTableAssociation             cnis-rta-internal-private-app-c                    create     
+ +   │  │  ├─ aws:ec2:VpcEndpointRouteTableAssociation  cnis-rta-internal-vpce-s3                          create     
+ +   │  │  └─ aws:ec2:RouteTableAssociation             cnis-rta-internal-private-app-a                    create     
+ +   │  ├─ aws:ec2:InternetGateway                      cnis-igw-main                                      create     
+ +   │  ├─ aws:ec2:Subnet                               cnis-subnet-private-egress-a                       create     
+ +   │  ├─ aws:ec2:Subnet                               cnis-subnet-private-egress-c                       create     
+ +   │  ├─ aws:ec2:VpcEndpoint                          cnis-vpce-s3                                       create     
+ +   │  ├─ aws:ec2:Subnet                               cnis-subnet-public-ingress-a                       create     
+ +   │  ├─ aws:alb:TargetGroup                          cnis-alb-tg-app                                    create     
+ +   │  ├─ aws:ec2:Subnet                               cnis-subnet-private-app-a                          create     
+ +   │  ├─ aws:ec2:Subnet                               cnis-subnet-public-ingress-c                       create     
+ +   │  ├─ aws:ec2:RouteTable                           cnis-rt-public                                     create     
+ +   │  │  ├─ aws:ec2:RouteTableAssociation             cnis-rta-public-public-ingress-c                   create     
+ +   │  │  └─ aws:ec2:RouteTableAssociation             cnis-rta-public-public-ingress-a                   create     
+ +   │  ├─ aws:alb:LoadBalancer                         cnis-alb-app                                       create     
+ +   │  │  └─ aws:lb:Listener                           cnis-alb-lsnr-app                                  create     
+ +   │  ├─ aws:ec2:VpcEndpoint                          cnis-vpce-ecr-api                                  create     
+ +   │  ├─ aws:ec2:VpcEndpoint                          cnis-vpce-logs                                     create     
+ +   │  └─ aws:ec2:VpcEndpoint                          cnis-vpce-ecr-dkr                                  create     
+ +   ├─ aws:iam:Role                                    cnis-ecs-task-execution-role                       create     
+ +   ├─ aws:cloudwatch:LogGroup                         cnis-logs-app                                      create     
+ +   ├─ aws:ecr:Repository                              cnis-ecr-app                                       create     
+ +   ├─ aws:ssm:Parameter                               cnis-ssm-param-cnis-app                            create     
+ +   ├─ aws:ec2:SecurityGroup                           cnis-sg-public-ingress                             create     
+ +   ├─ aws:iam:RolePolicyAttachment                    cnis-ecs-task-execution-managed-policy-attachment  create     
+ +   ├─ aws:ecs:TaskDefinition                          cnis-ecs-taskdef-app                               create     
+ +   ├─ aws:ec2:SecurityGroup                           cnis-sg-private-app                                create     
+ +   └─ aws:ec2:SecurityGroup                           cnis-sg-private-egress                             create     
+ 
+Resources:
+    + 34 to create
+
+# Upによる実際のAWSリソース作成
+$ pulumi up
+:
+Resources:
+    + 34 to create
+
+# 下記のように選択を求められたら、必要に応じてdetailsを選択し、設定内容を確認します。
+# その後、問題なければyesを選択してリソースを作成します。
+Do you want to perform this update?  [Use arrows to move, enter to select, type to filter]
+> yes
+  no
+  details
+
+# Pulumi Upが実行されるので、以下の様に出力されるとAWSリソース作成が完了です。
+:
+Resources:
+    + 34 created
+
+Duration: 2m44s
 
 ```
 
+## アプリの疎通確認
+// TODO
+
+## 後片付け
+
+### AWSリソースの削除
+
+1. Cloud9 IDEを開き、画面下部のコマンドラインにて以下を入力。
+```bash
+# Pulumiのリソース削除はdestroyで実行します。
+$ pulumi destroy
+Previewing destroy (main)
+
+View Live: https://app.pulumi.com/m-arai/pulumi-go/main/previews/535c0c4d-f8e7-4f00-9153-584a6898ec17
+
+:
+
+Resources:
+    - 34 to delete
+
+# 作成時と同じように聞かれるので、消してよければyesを選択します。
+Do you want to perform this destroy?  [Use arrows to move, enter to select, type to filter]
+> yes
+  no
+  details
+
+# すると以下のようにリソースがまとめて削除されます。
+Do you want to perform this destroy? yes
+Destroying (main)
+
+View Live: https://app.pulumi.com/m-arai/pulumi-go/main/updates/4
+
+:
+```
+### Pulumiスタックの削除
+// TODO
+
+### Pulumiアカウントの削除
+// 
+
+
+## 補足
+- ニーズがあれば、ハンズオン資料を充実させたいと思うので、必要であればプルリク上げてください。
 
 #### 参考
 https://www.pulumi.com/docs/get-started/install/
