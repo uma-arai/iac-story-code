@@ -16,12 +16,12 @@
     },
     {
       "Effect":"Allow",
-      "Action":[
+      "Action": [
         "s3:PutObject",
         "s3:PutObjectAcl",
         "s3:GetObject",
         "s3:GetObjectAcl",
-        "s3:*"
+        "s3:*"    // TODO:削除
       ],
       "Resource":"*"
     },
@@ -38,7 +38,7 @@
     {
       "Effect": "Allow",
       "Action": "sts:AssumeRole",
-      "Resource": "arn:aws:iam::365956602651:role/NudgeFluentbitRole"
+      "Resource": "arn:aws:iam::365956602651:role/NudgeFluentbitRole" //TODO: 削除
     }
   ]
 }
