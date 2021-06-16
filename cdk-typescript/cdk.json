@@ -12,9 +12,15 @@
     "@aws-cdk/aws-ecs-patterns:removeDefaultDesiredCount": true,
     "@aws-cdk/aws-rds:lowercaseDbIdentifier": true,
     "@aws-cdk/aws-efs:defaultEncryptionAtRest": true,
-    "@aws-cdk/aws-lambda:recognizeVersionProps": true
-  },
-  "dev": {
-    "serviceName": "sbcntr"
+    "@aws-cdk/aws-lambda:recognizeVersionProps": true,
+    "dev": {
+      "serviceParameters": {
+        "desiredCount": 1,
+        "taskCpu": 256,
+        "taskMemory": 512,
+        "containerCpu": 256,
+        "containerMemory": 512
+      }
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { Construct } from "@aws-cdk/core";
+import { Construct, Stack } from "@aws-cdk/core";
 import { ICnisContext } from "../model";
 
 export const getEnv = (scope: Construct, stage: string, key?: string): any => {
