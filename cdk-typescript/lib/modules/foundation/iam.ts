@@ -7,7 +7,7 @@ import {
   Role,
   ServicePrincipal,
 } from "@aws-cdk/aws-iam";
-import { getEnvContext } from "../../helper";
+import constants from "../../../constants";
 
 export class Iam extends cdk.Construct {
   readonly ecsTaskExecutionRole: IRole;
@@ -15,17 +15,16 @@ export class Iam extends cdk.Construct {
   constructor(scope: cdk.Construct, id: string) {
     super(scope, id);
 
-    const prefix = getEnvContext(scope).name;
-
-    // NOTE: 名前はecsTaskExecutionRoleかECSTaskExecution*にしておく必要がある。
-    // AWS側で用意されているマネージドポリシーであるAWSCodeDeployRoleForECSLimitedが
+    // NOTE: AWS側で用意されているマネージドポリシーであるAWSCodeDeployRoleForECSLimitedが
     // iam::PassRoleできるリソースがecsTaskExecutionRoleであるため。
+    // AWSCodeDeployRoleForECSLimitedを使う場合は名前はecsTaskExecutionRoleかECSTaskExecution*にしておく必要がある。
     // AWSCodeDeployRoleForECSを使うなら問題なし
+    // 今回はAmazonECSTaskExecutionRolePolicyなので問題なし
     const ecsTaskExecutionRole = new Role(
       this,
-      `${prefix}-ecs-task-execution-role`,
+      `${constants.ServicePrefix}-ecs-task-execution-role`,
       {
-        roleName: `${prefix}EcsTaskExecutionRole`,
+        roleName: `${constants.ServicePrefix}EcsTaskExecutionRole`,
         assumedBy: new ServicePrincipal("ecs-tasks"),
       }
     );
@@ -37,7 +36,7 @@ export class Iam extends cdk.Construct {
     new ManagedPolicy(this, "ssm-policy", {
       // WARNING: Descriptionを指定しておかないとDrift detectionにひっかかるので注意
       description: "Getting parameters in ssm parameter store for ECS",
-      managedPolicyName: `${prefix}-GetParameterStorePolicy`,
+      managedPolicyName: `${constants.ServicePrefix}-GetParameterStorePolicy`,
       statements: [
         new PolicyStatement({
           effect: Effect.ALLOW,

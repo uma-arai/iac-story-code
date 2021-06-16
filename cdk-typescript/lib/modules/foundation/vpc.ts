@@ -1,8 +1,8 @@
 import * as cdk from "@aws-cdk/core";
-import { Construct, Environment } from "@aws-cdk/core";
-import { IVpc, SubnetType, Vpc as CoreVpc } from "@aws-cdk/aws-ec2";
-import { getEnvContext } from "../../helper";
+import { Construct } from "@aws-cdk/core";
+import { IVpc, Vpc as CoreVpc } from "@aws-cdk/aws-ec2";
 import { SubnetConfiguration } from "@aws-cdk/aws-ec2/lib/vpc";
+import constants from "../../../constants";
 
 interface IVpcProps {
   cidr: string;
@@ -29,7 +29,6 @@ export class Vpc extends Construct {
       }),
     });
 
-    const { name } = getEnvContext(scope);
-    cdk.Tags.of(this.vpc).add("Name", `${name}-vpc`);
+    cdk.Tags.of(this.vpc).add("Name", `${constants.ServicePrefix}-vpc`);
   }
 }

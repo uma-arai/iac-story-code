@@ -1,5 +1,4 @@
 export interface ICnisContext {
-  name: string;
   ecs: {
     lbPriority: number;
     desiredCount: number;
@@ -11,3 +10,12 @@ export interface ICnisContext {
     autoscalingMaxCap: number;
   };
 }
+
+export const SecurityGroupNameType = {
+  ingress: "ingress",
+  app: "app",
+  vpce: "egress",
+} as const;
+
+export type SecurityGroupNameType =
+  typeof SecurityGroupNameType[keyof typeof SecurityGroupNameType];
