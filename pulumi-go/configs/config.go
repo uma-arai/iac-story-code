@@ -13,6 +13,7 @@ type Config struct {
 	AwsRegion          string
 	CnisResourcePrefix string
 	CnisProjectName    string
+	CnisSecretValue    pulumi.StringOutput
 }
 
 // NewConfig returns Config object with config initialization.
@@ -23,6 +24,7 @@ func NewConfig(ctx *pulumi.Context) Config {
 		AwsRegion:          aws.Require("region"),
 		CnisProjectName:    cnis.Require("project_name"),
 		CnisResourcePrefix: cnis.Require("resource_prefix"),
+		CnisSecretValue:    cnis.RequireSecret("secret_value"),
 	}
 	c.loadConfig()
 
