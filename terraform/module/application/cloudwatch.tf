@@ -1,5 +1,5 @@
 locals {
-  logs_prefix = "${var.cnis_resource_prefix}-logs-"
+  logs_prefix = "${var.cnis_resource_prefix}-logs"
 }
 
 resource "aws_cloudwatch_log_group" "app" {
