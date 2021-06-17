@@ -107,3 +107,43 @@ $ npm run deploy:dev:app
 ## アプリの疎通確認
 Cloud9の画面下部のターミナルから次のコマンドを実行してAPIリクエストをします。[ALBのDNS名]は自身のALBの名前でおきかえてください。
 
+## 後片付け
+
+### ECRのコンテナイメージの削除
+
+ECRにコンテナイメージが残っている状態でリポジトリを削除しようとすると次のエラーが発生します。
+エラーメッセージでは「このリポジトリにコンテナイメージが含まれているから削除できません」という内容です。
+
+```
+Resource handler returned message: "The repository with name 'cnis-ecr-app' in registry with id 'xxxxxxx' cannot be deleted because it still contains images
+```
+
+Cloud9から次のコマンドを実行してECRに格納されているイメージを削除します。
+
+```bash
+$ aws ecr batch-delete-image \
+> --repository-name cnis-ecr-app \
+> --image-ids imageTag=init
+
+{
+    "failures": [], 
+    "imageIds": [
+        {
+            "imageTag": "init", 
+            "imageDigest": "sha256:759116eef9c1d191dc83a574220a9052a6af555dac6a369da7cb8b5ce8563e13"
+        }
+    ]
+}
+```
+
+`failures`が空となっていれば完了です。ECRのダッシュボードでコンテナイメージが削除され、イメージが存在しないことを確認してください。
+
+### AWSリソースの削除
+
+```bash
+$ npm run destroy:all
+```
+
+### CloudFormationで利用するS3の削除
+
+TODO: 
