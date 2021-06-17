@@ -23,6 +23,7 @@
   - Node.js: v14.15.1
 
 - Terraform: v1.0
+  - tfenv: v2.2.2
   - AWS Provider: 3.45.0
   - Terragrant: v0.30.3
 
