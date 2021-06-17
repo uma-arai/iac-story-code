@@ -215,7 +215,7 @@ Cloud9のデフォルトボリュームだとサイズが足りないので、�
 
 再びCloud9コンソールに戻り、以下をインストールしておきます。
 ```
-$ sudo yum -y install tree
+$ sudo yum -y install tree jq
 ```
 
 ### リポジトリの取得

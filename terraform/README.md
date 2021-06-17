@@ -152,7 +152,7 @@ terragrunt version v0.30.3
 `init` -> `plan` -> `apply`の順番に実行していきます。
 Terragruntによりラップされた状態でコールしていきます。
 
-```
+```bash
 # AWS Providerプラグイン等のインストールするためにinitを実行
 $ terragrunt init
 Initializing modules...
@@ -234,15 +234,148 @@ module.infrastructure.aws_iam_role.ecs_task_execution: Creating...
 Apply complete! Resources: 3 added, 0 changed, 0 destroyed.
 ```
 
+## ECRへのアプリコンテナ登録
+
+作られたAWSリソースにおいて、ECSはECRからコンテナイメージを取得してデプロイするのですが、
+現状ではECRにコンテナが登録されていません。
+そこで、次に従ってサンプルアプリをコンテナビルドし、ECRに対してプッシュします。
+
+```bash
+
+# Dockerビルドにてコンテナイメージを作成
+$ cd ~/environment/iac-story-code/app/
+$ export CONTAINER_NAME="cnisapp"
+$ export CONTAINER_TAG="init"
+$ docker build -t ${CONTAINER_NAME}:${CONTAINER_TAG} .
+Sending build context to Docker daemon  11.82MB
+Step 1/14 : FROM golang:1.16.5-alpine3.13 AS build-env
+1.16.5-alpine3.13: Pulling from library/golang
+:
+Successfully built 7aa88fd39158
+Successfully tagged cnisapp:v1
+
+# ECRにログインしてコンテナイメージをプッシュ
+$ export AWS_ACCOUNT_ID=`aws sts get-caller-identity | jq .Account -r`
+$ $(aws ecr get-login --no-include-email --registry-ids ${AWS_ACCOUNT_ID} --region ap-northeast-1)
+
+$ AWS_ECR_URL=`aws ecr describe-repositories | jq .repositories[].repositoryUri -r | grep cnis-ecr-app`; docker tag ${CONTAINER_NAME}:${CONTAINER_TAG} ${AWS_ECR_URL}:${CONTAINER_TAG}
+
+$ docker push ${AWS_ECR_URL}:${CONTAINER_TAG}
+
+# プッシュしたイメージ内容の確認
+$ AWS_ECR_REPO_NAME=`aws ecr describe-repositories | jq .repositories[].repositoryName -r | grep cnis`; aws ecr describe-images --repository-name $AWS_ECR_REPO_NAME
+```
+
+以上でデプロイするコンテナイメージがECRに登録できました。
+
+## アプリのデプロイ確認
+
+続けて、以下コマンドによりプッシュしたコンテナがECS上にデプロイされるか確認します。
+デプロイが完了すると、以下のようにECSタスクのARNが返却されます。
+```bash
+$ while true; do aws ecs list-tasks --cluster cnis-ecs-cluster-app; sleep 10; done
+{
+    "taskArns": []
+}
+{
+    "taskArns": []
+}
+:
+{
+    "taskArns": [
+        "arn:aws:ecs:ap-northeast-1:123456789012:task/cnis-ecs-cluster-app/8e2be702a59a4d5d9847b0f1cfdb52b0"
+    ]
+}
+# Ctel+C で停止
+```
+
 ## アプリの疎通確認
-// TODO
+
+デプロイされたアプリに対してリクエストを送ります。
+```bash
+$ export APP_FQDN=`aws elbv2 describe-load-balancers | jq .LoadBalancers[].DNSName -r | grep cnis-`
+$ curl http://${APP_FQDN}/cnis/v1/helloworld
+"Hello world!"
+```
+
+ハローワールドのレスポンスが返ってきました！
+IaCから作成されたアプリが正常稼働していそうです。
+続けて、Systems Manager パラメータストアに格納された値がアプリの環境変数として取り込まれているので、
+その値を取得してみましょう。
+
+まずはパラメータストアの値を見てみます。
+
+```bash
+$ aws ssm get-parameter --name cnis-ssm-param-cnis-app | jq .Parameter.Value -r
+Cloud Native IaC Story
+```
+
+"Cloud Native IaC Story"という値が設定されていますね。
+続けてデプロイアプリに対してリクエストを行います。
+
+```bash
+$ curl http://${APP_FQDN}/cnis/v1/param
+"Cloud Native IaC Story"
+```
+
+同じ文字列が返却されました！
+IaCから作成されたECSやSSMパラメータストアを通して、アプリが稼働する一連のAWSリソースを作成できました。
+
+以上でハンズオンは終了です。
+ぜひ、こちらのIaCサンプルコードを活用して、自分達のIaCサービスに活用していってください。
+
 ## 後片付け
+
+作成したAWSリソースを順番に削除していきます。
 
 ### AWSリソースの削除
 
+Terraformから作成したリソースを一括で削除します。
+
+```bash
+$ cd ~/environment/iac-story-code/terraform/env/dev/
+$ terragrunt destroy
+:
+Plan: 0 to add, 0 to change, 34 to destroy.
+
+Do you really want to destroy all resources?
+  Terraform will destroy all your managed infrastructure, as shown above.
+  There is no undo. Only 'yes' will be accepted to confirm.
+
+  Enter a value: yes 			# yesと入力する
+:
+
+Destroy complete! Resources: 34 destroyed.
+```
+
 ### 排他制御用のDynamoDBの削除
 
+排他制御用に作成したDynamoDBを削除します。
+
+1. AWSマネジメントコンソール上部の [サービス] タブより [DynamoDB] を選択。
+2. DynamoDB ダッシュボードの左側ナビゲーションメニューから [テーブル] を選択。
+3. テーブル一覧画面から [cnis-terraform-state-lock] を選択し、[テーブルの削除] を押下。
+4. [このテーブルに対応するすべての CloudWatch アラームを削除します]にチェックを入れ、テキストボックスに[delete]と入力後に [削除] ボタンを押下。
+5. DynamoDB ダッシュボードにてテーブルが削除されたことを確認。
+
 ### tfstate保存用S3バケット削除
+
+tfstateを保存していたS3バケットを削除します。
+S3バケット内にオブジェクトが存在しているとバケットが削除できないため、バケットを空→バケット削除の順に実施します。
+
+1. AWSマネジメントコンソール上部の [サービス] タブより [S3] を選択。
+2. S3ダッシュボードの左側ナビゲーションメニューから [バケット] を選択。
+3. バケット一覧から[cnis-terraform-[AWSアカウントID]] を選択し、[空にする] ボタンを押下。
+4. バケットを空にする画面にて、テキストフィールドに[完全に削除] と入力し、[空にする] ボタンを押下。
+5. 正常に空になったことを確認し、[終了] ボタンを押下。
+6. バケット一覧から[cnis-terraform-[AWSアカウントID]] を選択し、[削除] ボタンを押下。
+7. バケットを空にする画面にて、テキストフィールドにバケット名を入力し、[バケットを削除] ボタンを押下。
+8. 正常に削除されたことを確認。
+
+以上で作成したリソース削除は完了です。
+必要に応じてリポジトリ直下のREADME.mdに従ってCloud9を削除してください。
+
+お疲れ様でした。
 
 ## 補足
 - ニーズがあれば、ハンズオン資料を充実させたいと思うので、必要であればプルリク上げてください。

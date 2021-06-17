@@ -12,7 +12,7 @@
 Pulumiでは利用前にPulumiアカウントの登録が必要です。
 Pulumiのアカウントを所有していない方は以下手順に従って作成しましょう。
 
-1. [Pulumi]https://app.pulumi.com/signup)のWebサイトに移動
+1. [Pulumi](https://app.pulumi.com/signup)のWebサイトに移動
 2. GitHub, GitLab, Atlassian, Emailのいずれかでサインアップを行う。
 3. サインアップ後、[Settings] → [Access Tokens] に移動
 4. [Create token]ボタンを押下し、表示されたポップアップ画面にてdescriptionに`handson`と入力後、[Create token]ボタンを押下
@@ -122,8 +122,16 @@ To perform an initial deployment, run 'pulumi up'
 # pulumiプロジェクトを作成した際、いくつかのファイルが更新されてしまうので、checkoutで戻しておく
 $ git checkout Pulumi.main.yaml go.mod main.go
 
+# パラメータストアに秘匿な情報を受け渡すため、以下のようにシークレットを追加する
+$ pulumi config set --secret cnis:secret_value "Cloud Native IaC Story"
 
-# 実行前にPreviewで確認。プロバイダーのダウンロードに少し時間がかかります。
+# 実行前にPreviewで確認しましょう。
+# サンプルコードでは環境変数としてAWSアカウントIDを読み込む必要があるため、
+# 以下により環境変数として格納しておきます。
+$ export AWS_ACCOUNT_ID=`aws sts get-caller-identity | jq .Account -r` && env | grep AWS_ACCOUNT_ID
+
+# Previewを見てみましょう。
+# プロバイダーのダウンロードに少し時間がかかります。
 $ pulumi preview
 Previewing update (main)
 
@@ -192,8 +200,106 @@ Duration: 2m44s
 
 ```
 
+## ECRへのアプリコンテナ登録
+
+作られたAWSリソースにおいて、ECSはECRからコンテナイメージを取得してデプロイするのですが、
+現状ではECRにコンテナが登録されていません。
+そこで、次に従ってサンプルアプリをコンテナビルドし、ECRに対してプッシュします。
+
+```bash
+
+# Dockerビルドにてコンテナイメージを作成
+$ cd ~/environment/iac-story-code/app/
+$ export CONTAINER_NAME="cnisapp"
+$ export CONTAINER_TAG="init"
+$ docker build -t ${CONTAINER_NAME}:${CONTAINER_TAG} .
+Sending build context to Docker daemon  11.82MB
+Step 1/14 : FROM golang:1.16.5-alpine3.13 AS build-env
+1.16.5-alpine3.13: Pulling from library/golang
+:
+Successfully built 7aa88fd39158
+Successfully tagged cnisapp:v1
+
+# ECRにログインしてコンテナイメージをプッシュ
+$ AWS_ACCOUNT_ID=`aws sts get-caller-identity | jq .Account -r`; $(aws ecr get-login --no-include-email --registry-ids ${AWS_ACCOUNT_ID} --region ap-northeast-1)
+:
+Login Succeeded
+
+# ECRにプッシュするためにコンテナイメージ名をECR URLに変更
+$ AWS_ECR_URL=`aws ecr describe-repositories | jq .repositories[].repositoryUri -r | grep cnis-ecr-app`; docker tag ${CONTAINER_NAME}:${CONTAINER_TAG} ${AWS_ECR_URL}:${CONTAINER_TAG}
+
+# コンテナイメージのプッシュ
+$ docker push ${AWS_ECR_URL}:${CONTAINER_TAG}
+
+# プッシュしたイメージ内容の確認
+$ AWS_ECR_REPO_NAME=`aws ecr describe-repositories | jq .repositories[].repositoryName -r | grep cnis`; aws ecr describe-images --repository-name $AWS_ECR_REPO_NAME
+```
+
+以上でデプロイするコンテナイメージがECRに登録できました。
+
+## アプリのデプロイ確認
+
+続けて、以下コマンドによりプッシュしたコンテナがECS上にデプロイされるか確認します。
+デプロイが完了すると、以下のようにECSタスクのARNが返却されます。
+```bash
+$ while true; do aws ecs list-tasks --cluster cnis-ecs-cluster-app; sleep 10; done
+
+{
+    "taskArns": []
+}
+{
+    "taskArns": []
+}
+:
+{
+    "taskArns": [
+        "arn:aws:ecs:ap-northeast-1:123456789012:task/cnis-ecs-cluster-app/8e2be702a59a4d5d9847b0f1cfdb52b0"
+    ]
+}
+{
+    "taskArns": [
+        "arn:aws:ecs:ap-northeast-1:123456789012:task/cnis-ecs-cluster-app/8e2be702a59a4d5d9847b0f1cfdb52b0"
+    ]
+}
+:
+# Ctel+C で停止
+```
+
 ## アプリの疎通確認
-// TODO
+
+デプロイされたアプリに対してリクエストを送ります。
+```bash
+$ export APP_FQDN=`aws elbv2 describe-load-balancers | jq .LoadBalancers[].DNSName -r | grep cnis-`
+$ curl http://${APP_FQDN}/cnis/v1/helloworld
+"Hello world!"
+```
+
+ハローワールドのレスポンスが返ってきました！
+IaCから作成されたアプリが正常稼働していそうです。
+続けて、Systems Manager パラメータストアに格納された値がアプリの環境変数として取り込まれているので、
+その値を取得してみましょう。
+
+まずはパラメータストアの値を見てみます。
+
+```bash
+$ aws ssm get-parameter --name cnis-ssm-param-cnis-app | jq .Parameter.Value -r
+Cloud Native IaC Story
+```
+
+"Cloud Native IaC Story"という値が設定されていますね。
+続けてデプロイアプリに対してリクエストを行います。
+
+```bash
+$ curl http://${APP_FQDN}/cnis/v1/param
+"Cloud Native IaC Story"
+```
+
+同じ文字列が返却されました！
+IaCから作成されたECSやSSMパラメータストアを通して、アプリが稼働する一連のAWSリソースを作成できました。
+
+以上でハンズオンは終了です。
+ぜひ、こちらのIaCサンプルコードを活用して、自分達のIaCサービスに活用していってください。
+
 
 ## 後片付け
 
@@ -202,6 +308,7 @@ Duration: 2m44s
 1. Cloud9 IDEを開き、画面下部のコマンドラインにて以下を入力。
 ```bash
 # Pulumiのリソース削除はdestroyで実行します。
+$ cd ~/environment/iac-story-code/pulumi-go/
 $ pulumi destroy
 Previewing destroy (main)
 
@@ -210,7 +317,7 @@ View Live: https://app.pulumi.com/m-arai/pulumi-go/main/previews/535c0c4d-f8e7-4
 :
 
 Resources:
-    - 34 to delete
+    - 37 to delete
 
 # 作成時と同じように聞かれるので、消してよければyesを選択します。
 Do you want to perform this destroy?  [Use arrows to move, enter to select, type to filter]
@@ -225,16 +332,35 @@ Destroying (main)
 View Live: https://app.pulumi.com/m-arai/pulumi-go/main/updates/4
 
 :
+Resources:
+    - 37 deleted
+
+Duration: 4m56s
+
+The resources in the stack have been deleted, but the history and configuration associated with the stack are still maintained. 
+If you want to remove the stack completely, run 'pulumi stack rm main'.
 ```
 ### Pulumiスタックの削除
-// TODO
+
+作成したPulumiスタックを削除します。
+```bash
+$ pulumi stack rm main
+This will permanently remove the 'main' stack!
+Please confirm that this is what you'd like to do by typing ("main"): main  # mainと入力
+Stack 'main' has been removed!
+```
 
 ### Pulumiアカウントの削除
-// 
 
+最後にPulumiアカウントを削除します。
+1人で利用する分には無料であり、こちらは必要に応じて実施してください。
+
+1. [Pulumi](https://app.pulumi.com/signin)のWebサイトに移動し、サインイン
+2. サインイン後、[Settings] → [General] に移動
+3. [Delete account]ボタンを押下し、表示の指示に従ってテキストボックスを入力後、[Delete account]ボタンを押下
 
 ## 補足
-- ニーズがあれば、ハンズオン資料を充実させたいと思うので、必要であればプルリク上げてください。
+- ニーズがあれば、ハンズオン資料を充実させたいと思うので、必要であればスターやプルリクください。
 
 #### 参考
 https://www.pulumi.com/docs/get-started/install/
