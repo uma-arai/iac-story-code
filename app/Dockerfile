@@ -19,9 +19,5 @@ RUN mkdir /app && \
     cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 WORKDIR /app
 COPY --from=build-env /app/main /app
-RUN mkdir /user && \
-    echo 'nobody:x:65534:65534:nobody:/:' > /user/passwd && \
-    echo 'nobody:x:65534:' > /user/group
-USER nobody
 EXPOSE 80
 ENTRYPOINT ["/app/main"]
