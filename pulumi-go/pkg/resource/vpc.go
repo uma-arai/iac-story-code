@@ -109,6 +109,7 @@ func (v *VpcMain) CreateEcrVpcEndpoint(sg *ec2.SecurityGroup) (err error) {
 	epList := map[string]string{
 		"ecr-api": "ecr.api",
 		"ecr-dkr": "ecr.dkr",
+		"ssm":     "ssm",
 	}
 	for epId, kind := range epList {
 		if err = v.createVpcEndpoint(epId, kind, sg); err != nil {
