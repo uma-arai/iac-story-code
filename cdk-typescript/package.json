@@ -13,10 +13,15 @@
     "cdk": "npx cdk",
     "prepare:func": "yarn tsc ./lib/functions/**/*.ts",
     "bootstrap:dev": "cdk bootstrap --context env=dev",
-    "deploy:dev:iam": "cdk deploy management --context env=dev",
-    "deploy:dev:base": "cdk deploy infra --context env=dev",
-    "destroy:dev:base": "cdk destroy infra --context env=dev",
-    "destroy:dev:app": "cdk destroy app --context env=dev",
+    "deploy:dev:iam": "cdk deploy cnis-management --context env=dev",
+    "deploy:dev:base": "cdk deploy cnis-infra --context env=dev",
+    "deploy:dev:appb": "cdk deploy cnis-app-base --context env=dev",
+    "deploy:dev:app": "cdk deploy cnis-app --context env=dev",
+    "destroy:all": "cdk destroy --all",
+    "destroy:dev:iam": "cdk deploy cnis-management --context env=dev",
+    "destroy:dev:base": "cdk deploy cnis-infra --context env=dev",
+    "destroy:dev:appb": "cdk destroy cnis-app-base --context env=dev",
+    "destroy:dev:app": "cdk destroy cnis-app --context env=dev",
     "deploy:stg": "cdk deploy --context env=stg",
     "deploy:prd": "cdk deploy --context env=prd",
     "postinstall": "npx patch-package"
@@ -47,6 +52,7 @@
     "@aws-cdk/aws-ecs-patterns": "1.107.0",
     "@aws-cdk/aws-elasticloadbalancingv2": "1.107.0",
     "@aws-cdk/aws-iam": "1.107.0",
+    "@aws-cdk/aws-logs": "^1.107.0",
     "@aws-cdk/aws-ssm": "1.107.0",
     "@aws-cdk/core": "1.107.0"
   }

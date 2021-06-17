@@ -1,13 +1,12 @@
+import { IParameter } from "@aws-cdk/aws-ssm";
+
 export interface ICnisContext {
-  ecs: {
-    lbPriority: number;
+  serviceParameters: {
     desiredCount: number;
     taskCpu: number;
     taskMemory: number;
     containerCpu: number;
     containerMemory: number;
-    autoscalingMinCap: number;
-    autoscalingMaxCap: number;
   };
 }
 
@@ -17,5 +16,8 @@ export const SecurityGroupNameType = {
   vpce: "egress",
 } as const;
 
+//eslint-disable-next-line no-redeclare
 export type SecurityGroupNameType =
   typeof SecurityGroupNameType[keyof typeof SecurityGroupNameType];
+
+export type IContainerSecretList = { [key: string]: IParameter };

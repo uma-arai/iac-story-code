@@ -10,6 +10,7 @@ export class CnisManagementStack extends Stack {
     super(scope, id);
 
     Tags.of(this).add("Project", constants.ProjectName);
+
     const iam = new BaseIam(this, "iam");
     this.ecsTaskExecutionRole = iam.ecsTaskExecutionRole;
   }

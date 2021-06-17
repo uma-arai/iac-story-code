@@ -11,13 +11,13 @@ import {
 import { SecurityGroupNameType } from "../../../model";
 import constants from "../../../constants";
 
-interface VpcEndpointProps {
+interface IVpcEndpointProps {
   vpc: IVpc;
   securityGroups: Map<string, ISecurityGroup>;
 }
 
 export class VpcEndpoint extends Construct {
-  constructor(scope: Construct, id: string, props: VpcEndpointProps) {
+  constructor(scope: Construct, id: string, props: IVpcEndpointProps) {
     super(scope, id);
 
     const { vpc, securityGroups } = props;

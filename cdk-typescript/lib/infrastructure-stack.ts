@@ -7,21 +7,19 @@ import { ControlPlane } from "./modules/services/control-plane";
 import { Parameter } from "./modules/parameter";
 import { SecurityGroups } from "./modules/foundation/security-group";
 import { VpcEndpoint } from "./modules/foundation/vpce";
+import { ICluster } from "@aws-cdk/aws-ecs";
+import { parameterKeys } from "../params";
 
 export class CnisInfraStack extends Stack {
   readonly vpc: IVpc;
   readonly securityGroupList: Map<string, ISecurityGroup>;
-  readonly ssmParameters: Map<string, IParameter>;
+  readonly parameters: Map<string, IParameter>;
+  readonly cluster: ICluster;
 
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
     Tags.of(this).add("Project", constants.ProjectName);
-
-    // Security groups
-    this.securityGroupList = new SecurityGroups(this, "securityGroup", {
-      vpc: this.vpc,
-    }).securityGroups;
 
     // Network resources
     const vpcCidr = "10.100.0.0/16";
@@ -43,25 +41,40 @@ export class CnisInfraStack extends Stack {
         },
       ],
     });
-    this.vpc = cnisVpc.vpc;
+
+    // Security groups
+    this.securityGroupList = new SecurityGroups(
+      this,
+      `${constants.ServicePrefix}-securityGroup`,
+      {
+        vpc: cnisVpc.vpc,
+      }
+    ).securityGroups;
+
     new VpcEndpoint(this, "vpce", {
-      vpc: this.vpc,
+      vpc: cnisVpc.vpc,
       securityGroups: this.securityGroupList,
     });
 
     // ECS Cluster
-    new ControlPlane(this, `${constants.ServicePrefix}-cluster`, {
-      vpc: this.vpc,
-    });
+    const controlPlane = new ControlPlane(
+      this,
+      `${constants.ServicePrefix}-cluster`,
+      {
+        vpc: cnisVpc.vpc,
+      }
+    );
 
     // Parameter Store
-    const parameters = {
-      "cnis-ssm-param-cnis-app": "Cloud Native IaC Story",
-    };
-    this.ssmParameters = new Parameter(
+    const parameters: Record<string, string> = {};
+    parameters[parameterKeys.AppParams] = "Cloud Native IaC Story";
+    this.parameters = new Parameter(
       this,
       `${constants.ServicePrefix}-parameters`,
       parameters
     ).parameters;
+
+    this.vpc = cnisVpc.vpc;
+    this.cluster = controlPlane.cluster;
   }
 }
