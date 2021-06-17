@@ -1,39 +1,17 @@
 import * as cdk from "@aws-cdk/core";
-import { RemovalPolicy, Stack, StackProps, Tags } from "@aws-cdk/core";
+import { RemovalPolicy, Stack, Tags } from "@aws-cdk/core";
 import { ContainerRepository } from "./modules/repository/ecr";
 import constants from "../constants";
-import { ILogGroup, LogGroup, RetentionDays } from "@aws-cdk/aws-logs";
-import { AppLoadBalancer as CnisAlb } from "./modules/loadbalancer/alb";
-import { ISecurityGroup, IVpc } from "@aws-cdk/aws-ec2";
-import { SecurityGroupNameType } from "../model";
 import { IRepository } from "@aws-cdk/aws-ecr/lib/repository";
-import {
-  IApplicationListener,
-  IApplicationLoadBalancer,
-  ITargetGroup,
-} from "@aws-cdk/aws-elasticloadbalancingv2";
-
-type LoadBalancerInformation = {
-  readonly alb: IApplicationLoadBalancer;
-  readonly targetGroup: ITargetGroup;
-  readonly listener: IApplicationListener;
-};
-
-interface IAppBaseStackProps extends StackProps {
-  vpc: IVpc;
-  securityGroups: Map<string, ISecurityGroup>;
-}
+import { ILogGroup, LogGroup, RetentionDays } from "@aws-cdk/aws-logs";
 
 // TODO: 全般。モジュールに対しては名前のプレフィックスはpropsとしてDIするように書き換える
 export class AppBaseStack extends Stack {
   readonly repository: IRepository;
-  readonly lbInfo: LoadBalancerInformation;
-  readonly logs: ILogGroup;
+  readonly logGroup: ILogGroup;
 
-  constructor(scope: cdk.App, id: string, props: IAppBaseStackProps) {
-    super(scope, id, props);
-
-    const { vpc, securityGroups } = props;
+  constructor(scope: cdk.App, id: string) {
+    super(scope, id);
 
     Tags.of(this).add("Project", constants.ProjectName);
 
@@ -47,20 +25,10 @@ export class AppBaseStack extends Stack {
     ).repository;
 
     // Logs
-    this.logs = new LogGroup(this, `${constants.ServicePrefix}-logs-app`, {
+    this.logGroup = new LogGroup(this, `${constants.ServicePrefix}-logs-app`, {
       logGroupName: `${constants.ServicePrefix}-logs-app`,
       retention: RetentionDays.ONE_WEEK,
       removalPolicy: RemovalPolicy.DESTROY,
-    });
-
-    // ALB
-    const securityGroup = securityGroups.get(SecurityGroupNameType.ingress);
-    if (!securityGroup) {
-      throw new Error("No alb security group is set");
-    }
-    this.lbInfo = new CnisAlb(this, `${constants.ServicePrefix}-alb`, {
-      vpc,
-      securityGroup,
     });
   }
 }

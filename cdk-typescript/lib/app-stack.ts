@@ -1,5 +1,5 @@
 import * as cdk from "@aws-cdk/core";
-import { Stack, StackProps, Tags } from "@aws-cdk/core";
+import { RemovalPolicy, Stack, StackProps, Tags } from "@aws-cdk/core";
 import constants from "../constants";
 import { IParameter } from "@aws-cdk/aws-ssm";
 import { ISecurityGroup, IVpc } from "@aws-cdk/aws-ec2";
@@ -10,9 +10,9 @@ import { FargateTaskDefinition, ICluster } from "@aws-cdk/aws-ecs";
 import { ContainerDefinition } from "./modules/services/container-definition";
 import { IRole } from "@aws-cdk/aws-iam";
 import { IRepository } from "@aws-cdk/aws-ecr/lib/repository";
-import { Repository } from "@aws-cdk/aws-ecr";
-import { IApplicationListener } from "@aws-cdk/aws-elasticloadbalancingv2";
-import { ILogGroup } from "@aws-cdk/aws-logs";
+import { ILogGroup, LogGroup, RetentionDays } from "@aws-cdk/aws-logs";
+import { AppLoadBalancer as CnisAlb } from "./modules/loadbalancer/alb";
+import { parameterKeys } from "../params";
 
 interface IAppStackProps extends StackProps {
   vpc: IVpc;
@@ -22,8 +22,6 @@ interface IAppStackProps extends StackProps {
     cluster: ICluster;
     executionRole: IRole;
     repository: IRepository;
-    listener: IApplicationListener;
-    //targetGroup: ITargetGroup;
     logGroup: ILogGroup;
   };
 }
@@ -33,11 +31,21 @@ export class AppStack extends Stack {
     super(scope, id, props);
 
     const { vpc, parameters, securityGroups, controlPlane } = props;
-    const { executionRole, cluster, logGroup, listener } = controlPlane;
+    const { executionRole, cluster, repository, logGroup } = controlPlane;
 
     Tags.of(this).add("Project", constants.ProjectName);
-
     const { taskCpu, taskMemory } = getEnvContext(this).serviceParameters;
+
+    // ALB
+    const securityGroup = securityGroups.get(SecurityGroupNameType.ingress);
+    if (!securityGroup) {
+      throw new Error("No alb security group is set");
+    }
+    const albInfo = new CnisAlb(this, `${constants.ServicePrefix}-alb`, {
+      vpc,
+      securityGroup,
+    });
+
     // タスク定義の作成
     const taskDefinition = new FargateTaskDefinition(this, `ecs-taskdef`, {
       memoryLimitMiB: taskMemory,
@@ -49,15 +57,22 @@ export class AppStack extends Stack {
 
     // コンテナ定義の作成
 
-    // FIXME: 今回作成したレポを使うように修正
-    const dummyRepos = Repository.fromRepositoryName(
-      this,
-      "dummy-repo",
-      "sbcntr-backend"
-    );
+    //// FIXME: 今回作成したレポを使うように修正
+    //const dummyRepos = Repository.fromRepositoryName(
+    //  this,
+    //  "dummy-repo",
+    //  "sbcntr-backend"
+    //);
+    const param1 = parameters.get(parameterKeys.AppParams);
+    if (!param1) {
+      throw new Error("Param get error");
+    }
+    const containerParameters = {
+      SSM_PARAM_TEST: param1,
+    };
     new ContainerDefinition(this, `ecs-container-def`, {
-      repository: dummyRepos,
-      parameterMap: parameters,
+      repository,
+      parameterMap: containerParameters,
       taskDefinition,
       logGroup,
     });
@@ -67,13 +82,12 @@ export class AppStack extends Stack {
     if (!appSecurityGroup) {
       throw new Error("No application security group for cluster found");
     }
-
     new CnisEcsService(this, `${constants.ServicePrefix}-ecs-service`, {
       cluster,
       serviceSecurityGroup: appSecurityGroup,
       taskDefinition,
       selectedSubnet: vpc.selectSubnets({ subnetGroupName: "app" }),
-      listener,
+      listener: albInfo.listener,
     });
   }
 }

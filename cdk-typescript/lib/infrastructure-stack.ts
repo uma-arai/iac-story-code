@@ -8,6 +8,7 @@ import { Parameter } from "./modules/parameter";
 import { SecurityGroups } from "./modules/foundation/security-group";
 import { VpcEndpoint } from "./modules/foundation/vpce";
 import { ICluster } from "@aws-cdk/aws-ecs";
+import { parameterKeys } from "../params";
 
 export class CnisInfraStack extends Stack {
   readonly vpc: IVpc;
@@ -65,9 +66,8 @@ export class CnisInfraStack extends Stack {
     );
 
     // Parameter Store
-    const parameters = {
-      "cnis-ssm-param-cnis-app": "Cloud Native IaC Story",
-    };
+    const parameters: Record<string, string> = {};
+    parameters[parameterKeys.AppParams] = "Cloud Native IaC Story";
     this.parameters = new Parameter(
       this,
       `${constants.ServicePrefix}-parameters`,

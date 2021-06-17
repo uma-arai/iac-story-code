@@ -14,10 +14,7 @@ try {
   const infra = new CnisInfraStack(app, "infra");
 
   const { vpc, parameters, securityGroupList } = infra;
-  const appbase = new AppBaseStack(app, `${constants.ServicePrefix}-app-base`, {
-    vpc,
-    securityGroups: securityGroupList,
-  });
+  const appbase = new AppBaseStack(app, `${constants.ServicePrefix}-app-base`);
 
   new AppStack(app, `${constants.ServicePrefix}-app`, {
     vpc,
@@ -26,9 +23,7 @@ try {
     controlPlane: {
       cluster: infra.cluster,
       executionRole: iam.ecsTaskExecutionRole,
-      repository: appbase.repository,
-      listener: appbase.lbInfo.listener,
-      logGroup: appbase.logs,
+      ...appbase,
     },
   });
 } catch (e) {

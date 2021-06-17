@@ -1,3 +1,5 @@
+import { IParameter } from "@aws-cdk/aws-ssm";
+
 export interface ICnisContext {
   serviceParameters: {
     desiredCount: number;
@@ -17,3 +19,5 @@ export const SecurityGroupNameType = {
 //eslint-disable-next-line no-redeclare
 export type SecurityGroupNameType =
   typeof SecurityGroupNameType[keyof typeof SecurityGroupNameType];
+
+export type IContainerSecretList = { [key: string]: IParameter };
