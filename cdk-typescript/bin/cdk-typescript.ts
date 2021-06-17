@@ -10,8 +10,11 @@ const app = new cdk.App();
 //const context = getEnvContext(app);
 
 try {
-  const iam = new CnisManagementStack(app, "management");
-  const infra = new CnisInfraStack(app, "infra");
+  const iam = new CnisManagementStack(
+    app,
+    `${constants.ServicePrefix}-management`
+  );
+  const infra = new CnisInfraStack(app, `${constants.ServicePrefix}-infra`);
 
   const { vpc, parameters, securityGroupList } = infra;
   const appbase = new AppBaseStack(app, `${constants.ServicePrefix}-app-base`);
