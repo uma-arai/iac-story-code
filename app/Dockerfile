@@ -1,0 +1,27 @@
+# Multi stage building strategy for reducing image size.
+FROM golang:1.16.5-alpine3.13 AS build-env
+ENV GO111MODULE=on
+RUN mkdir /app
+ADD . /app
+WORKDIR /app
+# Use "Ultimate Packer for eXecutables". ref: https://upx.github.io/
+RUN apk add --no-cache --virtual .go-builddeps git gcc make build-base alpine-sdk upx&& \
+    go mod download && \
+    go get golang.org/x/lint/golint && \
+    make validate && \
+    make build-linux && \
+    go get github.com/pwaller/goupx && \
+    goupx main
+
+FROM alpine:3.14
+RUN mkdir /app && \
+    apk add --no-cache tzdata&& \
+    cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+WORKDIR /app
+COPY --from=build-env /app/main /app
+RUN mkdir /user && \
+    echo 'nobody:x:65534:65534:nobody:/:' > /user/passwd && \
+    echo 'nobody:x:65534:' > /user/group
+USER nobody
+EXPOSE 80
+ENTRYPOINT ["/app/main"]
