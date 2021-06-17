@@ -24,6 +24,7 @@ func (i *IamForEcs) CreateRole() (err error) {
 	roleId := "ecs-task-execution"
 	iamPrefix := i.Plm.Cfg.CnisResourcePrefix + "-" + roleId
 	roleJson, err := ioutil.ReadFile(iamJsonPath + "iam-" + roleId + "-role.json")
+	policyJson, err := ioutil.ReadFile(iamJsonPath + "iam-" + roleId + "-policy.json")
 	if err != nil {
 		return
 	}
@@ -32,6 +33,23 @@ func (i *IamForEcs) CreateRole() (err error) {
 		AssumeRolePolicy: pulumi.String(roleJson),
 		Name:             pulumi.String("CnisECSTaskExecutionRole"),
 		Tags:             i.Plm.GetTag(),
+	})
+	if err != nil {
+		return
+	}
+
+	policy, err := iam.NewPolicy(i.Plm.Ctx, iamPrefix+"-policy", &iam.PolicyArgs{
+		Name:   pulumi.String("CnisECSTaskExecutionPolicy"),
+		Policy: pulumi.String(policyJson),
+		Tags:   i.Plm.GetTag(),
+	})
+	if err != nil {
+		return
+	}
+
+	_, err = iam.NewRolePolicyAttachment(i.Plm.Ctx, iamPrefix+"-policy-attachment", &iam.RolePolicyAttachmentArgs{
+		PolicyArn: policy.Arn,
+		Role:      i.Role.Name,
 	})
 	if err != nil {
 		return
