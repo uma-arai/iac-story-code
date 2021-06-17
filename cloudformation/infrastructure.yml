@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Infrastructure root template
+
+Parameters: 
+  Template:
+    Description: Template URL for each yml file
+    Type: String
+    //TODO: デフォルト値に説明を入れる
+    Default: https://cnis-cfn-bucket.s3.ap-northeast-1.amazonaws.com/infra
+
+Resources:
+  # VPCの作成
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub
+          - ${URL}/vpc.yml
+          - { URL: !Ref Template }
+
+  # SGの作成
+  SG:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub
+          - ${URL}/sg.yml
+          - { URL: !Ref Template }
+      Parameters: 
+        VpcId: !GetAtt VPC.Outputs.vpc
+    DependsOn: VPC
+    
+  # ECSクラスタの作成
+  ecs:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 
+        !Sub
+          - ${URL}/ecs.yml
+          - { URL: !Ref Template }
+    DependsOn: VPC
+    
+  # IAMの作成
+  iam:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 
+        !Sub
+          - ${URL}/iam.yml
+          - { URL: !Ref Template }
+          
+  # Parameter Storeの作成
+  CnisSsm:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 
+        !Sub
+          - ${URL}/ssm.yml
+          - { URL: !Ref Template }
+          
+            # Parameter Storeの作成
+  CnisSubnet:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 
+        !Sub
+          - ${URL}/subnet.yml
+          - { URL: !Ref Template }
+      Parameters: 
+        EgressSg: !GetAtt SG.Outputs.privateEgressSg
+    DependsOn: SG

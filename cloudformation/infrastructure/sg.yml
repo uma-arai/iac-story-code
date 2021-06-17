@@ -7,7 +7,6 @@ Parameters:
   ProjectName:
     Type: String
     Default: CloudNativeIaCStory
-  # TODO: Importする
   VpcId:
     Type: String
     Description: ID for VPC.
@@ -74,11 +73,14 @@ Resources:
       SourceSecurityGroupId: !Ref privateAppSg
 
 Outputs:
-  publicIngressSg:
-    Value: !Ref publicIngressSg
+  publicIngressSg:i
+    Value: !Ref pui
     Export:
       Name: !Sub ${ResourcePrefix}-ingress-sg
   privateAppSg:
     Value: !Ref privateAppSg
     Export:
       Name: !Sub ${ResourcePrefix}-app-sg
+  privateEgressSg:
+    Value: !Ref privateEgressSg
+    
