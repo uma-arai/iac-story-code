@@ -1,4 +1,4 @@
-import { Construct, Stack } from "@aws-cdk/core";
+import { Construct } from "@aws-cdk/core";
 import { ICnisContext } from "../model";
 
 export const getEnv = (scope: Construct, stage: string, key?: string): any => {
@@ -13,4 +13,16 @@ export const getEnvContext = (scope: Construct): ICnisContext => {
   const env: string = getEnv(scope, "env") || "dev";
 
   return getEnv(scope, env);
+};
+
+/**
+ * Returns validation result of IP address
+ * @export
+ * @param {string} ip
+ * @returns {boolean}
+ */
+export const validateIpRange = (ip: string): boolean => {
+  const regIpExp = new RegExp("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$");
+
+  return regIpExp.test(ip);
 };

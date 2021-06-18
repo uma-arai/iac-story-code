@@ -5,7 +5,6 @@ import constants from "../constants";
 import { IRepository } from "@aws-cdk/aws-ecr/lib/repository";
 import { ILogGroup, LogGroup, RetentionDays } from "@aws-cdk/aws-logs";
 
-// TODO: 全般。モジュールに対しては名前のプレフィックスはpropsとしてDIするように書き換える
 export class AppBaseStack extends Stack {
   readonly repository: IRepository;
   readonly logGroup: ILogGroup;
@@ -19,9 +18,7 @@ export class AppBaseStack extends Stack {
     this.repository = new ContainerRepository(
       this,
       `${constants.ServicePrefix}-repository`,
-      {
-        name: `${constants.ServicePrefix}-ecr-app`,
-      }
+      {}
     ).repository;
 
     // Logs

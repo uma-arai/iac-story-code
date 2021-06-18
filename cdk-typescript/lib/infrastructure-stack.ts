@@ -9,6 +9,7 @@ import { SecurityGroups } from "./modules/foundation/security-group";
 import { VpcEndpoint } from "./modules/foundation/vpce";
 import { ICluster } from "@aws-cdk/aws-ecs";
 import { parameterKeys } from "../params";
+import { validateIpRange } from "./helper";
 
 export class CnisInfraStack extends Stack {
   readonly vpc: IVpc;
@@ -22,8 +23,12 @@ export class CnisInfraStack extends Stack {
     Tags.of(this).add("Project", constants.ProjectName);
 
     // Network resources
-    const vpcCidr = "10.100.0.0/16";
-    // TODO: 正規表現チェック
+    const ipRange = "10.100.0.0";
+    if (validateIpRange(ipRange)) {
+      throw new Error("Invalid CIDR range");
+    }
+
+    const vpcCidr = `${ipRange}/16`;
     const cnisVpc = new CnisVpc(this, `${constants.ServicePrefix}-vpc`, {
       cidr: vpcCidr,
       subnetConfigurations: [
