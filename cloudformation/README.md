@@ -213,7 +213,7 @@ $ while true; do aws ecs list-tasks --cluster cnis-ecs-cluster-app; sleep 10; do
         "arn:aws:ecs:ap-northeast-1:123456789012:task/cnis-ecs-cluster-app/8e2be702a59a4d5d9847b0f1cfdb52b0"
     ]
 }
-# Ctel+C で停止
+# Ctrl+C で停止
 ```
 
 ## アプリの疎通確認

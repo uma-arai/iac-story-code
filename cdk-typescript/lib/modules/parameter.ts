@@ -15,7 +15,7 @@ export class Parameter extends Construct {
     const prefix = constants.ServicePrefix;
     Object.entries(props).map(([key, stringValue]) => {
       const param = new StringParameter(this, `${prefix}-${key}`, {
-        parameterName: `${prefix}-${key}`,
+        parameterName: key,
         stringValue,
       });
 
