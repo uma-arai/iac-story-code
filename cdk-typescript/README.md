@@ -80,8 +80,35 @@ CDKToolkit: creating CloudFormation changeset...
 | app            | ECSサービスなどアプリに必要なリソース               |
 
 
-まず`infrastructure` -> `app-base`の順番に展開していきます。
+まず`app-base` -> `infrastructure` の順番に展開していきます。
 その後、Cloud9からコンテナイメージをECRに登録後、`app`を展開します。
+
+### app-baseスタックのデプロイ
+
+同様にコマンドラインにて以下を入力してCDKの実行をします。
+
+```bash
+$ pwd
+/home/ec2-user/environment/iac-story-code/cdk-typescript
+
+$ npm run deploy:dev:appb
+
+> cdk-typescript@0.1.0 deploy:dev:appb /home/ec2-user/environment/iac-story-code/cdk-typescript
+> cdk deploy cnis-app-base --context env=dev
+
+cnis-app-base: deploying...
+cnis-app-base: creating CloudFormation changeset...
+[██████████████████████████████████████████████████████████] (4/4)
+
+ ✅  cnis-app-base
+
+Outputs:
+︙
+Stack ARN:
+arn:aws:cloudformation:ap-northeast-1:123456789012:stack/cnis-app-base/716d40e0-d03d-11eb-803a-0e15c04a62a9
+```
+
+ECRができていることを確認してください。
 
 ### infrastructureスタックのデプロイ
 
@@ -163,34 +190,7 @@ VPCやサブネット周りのリソースが作成できたことを確認し�
 1点、ほかのIaCサービスと異なり、いくつかの値についてはCDKのデフォルト値を利用しています。
 たとえば、サブネットのNameタグやCIDRです。本書で説明したとおり、L2 constructsをL1 constructsに変換すれば値の設定が可能ですが、そこの手間をかけるよりはCDKのプラクティスに乗ったほうがよいという判断のもとです。L2 constructsの設定値で簡単に設定ができる名称などについては設定をしています。
 
-### app-baseスタックのデプロイ
-
-同様にコマンドラインにて以下を入力してCDKの実行をします。
-
-```bash
-$ pwd
-/home/ec2-user/environment/iac-story-code/cdk-typescript
-
-$ npm run deploy:dev:appb
-
-> cdk-typescript@0.1.0 deploy:dev:appb /home/ec2-user/environment/iac-story-code/cdk-typescript
-> cdk deploy cnis-app-base --context env=dev
-
-cnis-app-base: deploying...
-cnis-app-base: creating CloudFormation changeset...
-[██████████████████████████████████████████████████████████] (4/4)
-
- ✅  cnis-app-base
-
-Outputs:
-︙
-Stack ARN:
-arn:aws:cloudformation:ap-northeast-1:123456789012:stack/cnis-app-base/716d40e0-d03d-11eb-803a-0e15c04a62a9
-```
-
-ECRができていることを確認してください。
 次に、作成したECRに対して後続でアプリケーションコンテナを登録します。
-
 ## ECRへのアプリコンテナ登録
 
 作られたAWSリソースにおいて、ECSはECRからコンテナイメージを取得してデプロイするのですが、
