@@ -1,6 +1,5 @@
 import { Construct, Stack, Tags } from "@aws-cdk/core";
 import { ISecurityGroup, IVpc, SubnetType } from "@aws-cdk/aws-ec2";
-import { IParameter } from "@aws-cdk/aws-ssm";
 import { Vpc as CnisVpc } from "./modules/foundation/vpc";
 import constants from "../constants";
 import { ControlPlane } from "./modules/services/control-plane";
@@ -10,12 +9,14 @@ import { VpcEndpoint } from "./modules/foundation/vpce";
 import { ICluster } from "@aws-cdk/aws-ecs";
 import { parameterKeys } from "../params";
 import { validateIpRange } from "./helper";
+import { IRole } from "@aws-cdk/aws-iam";
+import { Iam as BaseIam } from "./modules/foundation/iam";
 
 export class CnisInfraStack extends Stack {
   readonly vpc: IVpc;
   readonly securityGroupList: Map<string, ISecurityGroup>;
-  readonly parameters: Map<string, IParameter>;
   readonly cluster: ICluster;
+  readonly ecsTaskExecutionRole: IRole;
 
   constructor(scope: Construct, id: string) {
     super(scope, id);
@@ -73,11 +74,11 @@ export class CnisInfraStack extends Stack {
     // Parameter Store
     const parameters: Record<string, string> = {};
     parameters[parameterKeys.AppParams] = "Cloud Native IaC Story";
-    this.parameters = new Parameter(
-      this,
-      `${constants.ServicePrefix}-parameters`,
-      parameters
-    ).parameters;
+    new Parameter(this, `${constants.ServicePrefix}-parameters`, parameters);
+
+    // IAM
+    const iam = new BaseIam(this, "iam");
+    this.ecsTaskExecutionRole = iam.ecsTaskExecutionRole;
 
     this.vpc = cnisVpc.vpc;
     this.cluster = controlPlane.cluster;

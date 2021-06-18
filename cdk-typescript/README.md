@@ -417,8 +417,8 @@ Cloud9から次のコマンドを実行してECRに格納されているイメ�
 
 ```bash
 $ aws ecr batch-delete-image \
-> --repository-name cnis-ecr-app \
-> --image-ids imageTag=init
+--repository-name cnis-ecr-app \
+--image-ids imageTag=init
 
 {
     "failures": [], 
