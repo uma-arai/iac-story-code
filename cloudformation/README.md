@@ -51,11 +51,12 @@ $ aws s3api put-public-access-block \
 ## CloudFormationの実行
 
 いよいよサンプルソースコードを利用してAWSリソースを作成します。
-今回、CloudFormationでは2つのスタックを用意しています。
+今回、CloudFormationでは3つのスタックを用意しています。
 
 | スタック           | 内容                                 |
 |----------------|------------------------------------|
 | infrastructure | VPC、サブネットなどネットワーク周りやライフサイクルが長いリソース |
+| app-base       | ECRなどアプリに必要なベースリソース                |
 | application    | ECSサービスなどアプリに必要なリソース               |
 
 それぞれのテンプレートからスタックを作成して、リソースをデプロイします。
@@ -65,8 +66,9 @@ $ aws s3api put-public-access-block \
 サンプルコードではフラットにCloudFormationを記述するのではなく、Nested Stackを利用しています。親となるスタックからNestされたスタックを利用するためにはテンプレートのURLを指定します。S3にNestしたテンプレートを格納し、S3のURLを指定することとします。
 
 ```bash
-$ aws s3 cp infrastructure/ s3://${BUCKET_NAME} --recursive
-$ aws s3 cp application/ s3://${BUCKET_NAME} --recursive
+$ aws s3 cp infrastructure/ s3://${BUCKET_NAME}/infra --recursive
+$ aws s3 cp app-base/ s3://${BUCKET_NAME}/appbase --recursive
+$ aws s3 cp application/ s3://${BUCKET_NAME}/app --recursive
 ```
 
 ### infrastructureスタックのデプロイ
@@ -81,6 +83,15 @@ $ aws cloudformation create-stack --stack-name cnis-infrastructure --template-bo
     "StackId": "arn:aws:cloudformation:ap-northeast-1:xxxxxxxx:stack/cnis-infrastructure/addb4cf0-cfdb-11eb-8dff-0e9cfcf32e9f"
 }
 ```
+
+### app-baseスタックのデプロイ
+
+```bash
+$ pwd
+/home/ec2-user/environment/iac-story-code/cloudformation
+
+$ aws cloudformation create-stack --stack-name cnis-infrastructure --template-body file://infrastructure.yml --capabilities CAPABILITY_NAMED_IAM                                                     ```
+
 
 ### applicationスタックのデプロイ
 

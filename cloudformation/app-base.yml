@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Application base parent template
+
+Parameters: 
+  Template:
+    Description: Template URL for each yml file
+    Type: String
+    # TODO: デフォルト値に説明を入れる(https://cnis-cfn-bucket-[AWS_ACCOUNT_ID].s3.ap-northeast-1.amazonaws.com/infra)
+    Default: https://cnis-cfn-bucket.s3.ap-northeast-1.amazonaws.com/appbase
+
+Resources:
+  # ECRの作成
+  CnisEcr:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub
+          - ${URL}/ecr.yml
+          - { URL: !Ref Template }

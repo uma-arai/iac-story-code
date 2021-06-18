@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Infrastructure root template
+Description: Infrastructure parent template
 
 Parameters: 
   Template:
