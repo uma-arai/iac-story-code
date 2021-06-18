@@ -61,5 +61,4 @@ Resources:
 Outputs:
   cnisAlbTg:
     Value: !Ref cnisAlbTg
-    Export: 
-      Name: !Sub ${ResourcePrefix}-alb-tg-app
+    

@@ -67,8 +67,16 @@ $ aws s3api put-public-access-block \
 
 ```bash
 $ aws s3 cp infrastructure/ s3://${BUCKET_NAME}/infra --recursive
-$ aws s3 cp app-base/ s3://${BUCKET_NAME}/appbase --recursive
+upload: infrastructure/iam.yml to s3://[BUCKET_NAME]/infra/iam.yml
+︙
+
+$ aws s3 cp appbase/ s3://${BUCKET_NAME}/appbase --recursive
+upload: appbase/ecr.yml to s3://[BUCKET_NAME]/appbase/ecr.yml 
+
 $ aws s3 cp application/ s3://${BUCKET_NAME}/app --recursive
+upload: application/cloudwatch.yml to s3://[BUCKET_NAME]/app/cloudwatch.yml
+upload: application/alb.yml to s3://[BUCKET_NAME]/app/alb.yml 
+upload: application/ecs.yml to s3://[BUCKET_NAME]/app/ecs.yml
 ```
 
 ### infrastructureスタックのデプロイ
@@ -90,8 +98,46 @@ $ aws cloudformation create-stack --stack-name cnis-infrastructure --template-bo
 $ pwd
 /home/ec2-user/environment/iac-story-code/cloudformation
 
-$ aws cloudformation create-stack --stack-name cnis-infrastructure --template-body file://infrastructure.yml --capabilities CAPABILITY_NAMED_IAM                                                     ```
+$ aws cloudformation create-stack --stack-name cnis-appbase --template-body file://app-base.yml
+{
+    "StackId": "arn:aws:cloudformation:ap-northeast-1:
+    xxxxxxxx:stack/cnis-appbase/73de9b30-cfde-11eb-8a91-0e2c15a96cb9"
+}
+```
 
+### ECRへのアプリコンテナ登録
+
+作られたAWSリソースにおいて、ECSはECRからコンテナイメージを取得してデプロイするのですが、
+現状ではECRにコンテナが登録されていません。
+そこで、次に従ってサンプルアプリをコンテナビルドし、ECRに対してプッシュします。
+
+```bash
+
+# Dockerビルドにてコンテナイメージを作成
+$ cd ~/environment/iac-story-code/app/
+$ export CONTAINER_NAME="cnisapp"
+$ export CONTAINER_TAG="init"
+$ docker build -t ${CONTAINER_NAME}:${CONTAINER_TAG} .
+Sending build context to Docker daemon  11.82MB
+Step 1/14 : FROM golang:1.16.5-alpine3.13 AS build-env
+1.16.5-alpine3.13: Pulling from library/golang
+:
+Successfully built 7aa88fd39158
+Successfully tagged cnisapp:v1
+
+# ECRにログインしてコンテナイメージをプッシュ
+$ export AWS_ACCOUNT_ID=`aws sts get-caller-identity | jq .Account -r`
+$ $(aws ecr get-login --no-include-email --registry-ids ${AWS_ACCOUNT_ID} --region ap-northeast-1)
+
+$ AWS_ECR_URL=`aws ecr describe-repositories | jq .repositories[].repositoryUri -r | grep cnis-ecr-app`; docker tag ${CONTAINER_NAME}:${CONTAINER_TAG} ${AWS_ECR_URL}:${CONTAINER_TAG}
+
+$ docker push ${AWS_ECR_URL}:${CONTAINER_TAG}
+
+# プッシュしたイメージ内容の確認
+$ AWS_ECR_REPO_NAME=`aws ecr describe-repositories | jq .repositories[].repositoryName -r | grep cnis`; aws ecr describe-images --repository-name $AWS_ECR_REPO_NAME
+```
+
+以上でデプロイするコンテナイメージがECRに登録できました。
 
 ### applicationスタックのデプロイ
 

@@ -7,6 +7,12 @@ Parameters:
   ProjectName:
     Type: String
     Default: CloudNativeIaCStory
+  AlbTargetGroup:
+    Type: String
+    Description: ID for target group of ALB
+  ContainerLogGroupId:
+    Type: String
+    Description: ID for log group of ecs container
 
 Resources:
   cnisTaskDef:
@@ -14,17 +20,14 @@ Resources:
     Properties:
       ContainerDefinitions:
         - Name: !Sub ${ResourcePrefix}-ecs-container-app
-          # FIXME: ${ResourcePrefix}-ecr-app:initに置き換え
-          # "{accountId}.dkr.ecr.{region}.amazonaws.com/{repoName}:{tag}"
-          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/sbcntr-backend:v1" 
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ResourcePrefix}-ecr-app:init" 
           Cpu: 256
           MemoryReservation: 512
           Essential: true
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: 
-                  Fn::ImportValue: !Sub "${ResourcePrefix}-logs"
+              awslogs-group: !Ref ContainerLogGroupId
               awslogs-region: !Ref 'AWS::Region'
               awslogs-stream-prefix: ecs
           PortMappings:
@@ -63,8 +66,7 @@ Resources:
       LoadBalancers:
         - ContainerName: !Sub ${ResourcePrefix}-ecs-container-app
           ContainerPort: 80
-          TargetGroupArn: 
-            Fn::ImportValue: !Sub ${ResourcePrefix}-alb-tg-app
+          TargetGroupArn: !Ref AlbTargetGroup
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
