@@ -24,7 +24,7 @@ export class CnisInfraStack extends Stack {
     Tags.of(this).add("Project", constants.ProjectName);
 
     // Network resources
-    const ipRange = "10.100.0.0";
+    const ipRange = "10.0.0.0";
     if (!validateIpRange(ipRange)) {
       throw new Error("Invalid CIDR range");
     }
