@@ -104,10 +104,65 @@ $ pwd
 $ npm run deploy:dev:app
 ```
 
+## アプリのデプロイ確認
+
+続けて、以下コマンドによりプッシュしたコンテナがECS上にデプロイされるか確認します。
+デプロイが完了すると、以下のようにECSタスクのARNが返却されます。
+```bash
+$ while true; do aws ecs list-tasks --cluster cnis-ecs-cluster-app; sleep 10; done
+{
+    "taskArns": []
+}
+{
+    "taskArns": []
+}
+:
+{
+    "taskArns": [
+        "arn:aws:ecs:ap-northeast-1:123456789012:task/cnis-ecs-cluster-app/8e2be702a59a4d5d9847b0f1cfdb52b0"
+    ]
+}
+# Ctel+C で停止
+```
+
 ## アプリの疎通確認
-Cloud9の画面下部のターミナルから次のコマンドを実行してAPIリクエストをします。[ALBのDNS名]は自身のALBの名前でおきかえてください。
+
+デプロイされたアプリに対してリクエストを送ります。
+```bash
+$ export APP_FQDN=`aws elbv2 describe-load-balancers | jq .LoadBalancers[].DNSName -r | grep cnis-`
+$ curl http://${APP_FQDN}/cnis/v1/helloworld
+"Hello world!"
+```
+
+ハローワールドのレスポンスが返ってきました！
+IaCから作成されたアプリが正常稼働していそうです。
+続けて、Systems Manager パラメータストアに格納された値がアプリの環境変数として取り込まれているので、
+その値を取得してみましょう。
+
+まずはパラメータストアの値を見てみます。
+
+```bash
+$ aws ssm get-parameter --name cnis-ssm-param-cnis-app | jq .Parameter.Value -r
+Cloud Native IaC Story
+```
+
+"Cloud Native IaC Story"という値が設定されていますね。
+続けてデプロイアプリに対してリクエストを行います。
+
+```bash
+$ curl http://${APP_FQDN}/cnis/v1/param
+"Cloud Native IaC Story"
+```
+
+同じ文字列が返却されました！
+IaCから作成されたECSやSSMパラメータストアを通して、アプリが稼働する一連のAWSリソースを作成できました。
+
+以上でハンズオンは終了です。
+ぜひ、こちらのIaCサンプルコードを活用して、自分達のIaCサービスに活用していってください。
 
 ## 後片付け
+
+作成したAWSリソースを順番に削除していきます。
 
 ### ECRのコンテナイメージの削除
 
