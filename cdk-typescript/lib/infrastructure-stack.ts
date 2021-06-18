@@ -24,7 +24,7 @@ export class CnisInfraStack extends Stack {
 
     // Network resources
     const ipRange = "10.100.0.0";
-    if (validateIpRange(ipRange)) {
+    if (!validateIpRange(ipRange)) {
       throw new Error("Invalid CIDR range");
     }
 

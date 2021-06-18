@@ -1,6 +1,13 @@
 import { Construct } from "@aws-cdk/core";
 import { ICnisContext } from "../model";
 
+/**
+ *
+ * @param {Construct} scope
+ * @param {string} stage
+ * @param {string} key
+ * @returns {any}
+ */
 export const getEnv = (scope: Construct, stage: string, key?: string): any => {
   if (!key) {
     return scope.node.tryGetContext(stage);
@@ -9,6 +16,11 @@ export const getEnv = (scope: Construct, stage: string, key?: string): any => {
   return scope.node.tryGetContext(stage)[key];
 };
 
+/**
+ *
+ * @param {Construct} scope
+ * @returns {ICnisContext}
+ */
 export const getEnvContext = (scope: Construct): ICnisContext => {
   const env: string = getEnv(scope, "env") || "dev";
 
