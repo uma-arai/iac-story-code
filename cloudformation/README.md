@@ -63,6 +63,7 @@ $ aws s3api put-public-access-block \
 サンプルコードではフラットにCloudFormationを記述するのではなく、Nested Stackを利用しています。親となるスタックからNestされたスタックを利用するためにはテンプレートのURLを指定します。S3にNestしたテンプレートを格納し、S3のURLを指定することとします。
 
 ```bash
+$ cd ~/environment/iac-story-code/cloudformation/
 $ aws s3 cp infrastructure/ s3://${BUCKET_NAME}/infra --recursive
 upload: infrastructure/iam.yml to s3://[BUCKET_NAME]/infra/iam.yml
 ︙
@@ -78,47 +79,51 @@ upload: application/ecs.yml to s3://[BUCKET_NAME]/application/ecs.yml
 
 ### infrastructureスタックのデプロイ
 
-`infrastructure.yml`を開き、8行目の[AWS_ACCOUNT_ID]を自身のAWSアカウントIDに書き換えてください。
+`infrastructure.yml`のAWSアカウントIDを置き換えます。
 
-```text
-1	AWSTemplateFormatVersion: "2010-09-09"
-2	Description: Infrastructure parent template
-3
-4	Parameters:
-5	  Template:
-6	    Description: Template URL for each yml file
-7	    Type: String
-8	    Default: https://cnis-cfn-bucket-[AWS_ACCOUNT_ID].s3.ap-northeast-1.amazonaws.com/infra
-9
+```bash
+$ sed -i -e "s/\[AWS_ACCOUNT_ID\]/${AWS_ACCOUNT_ID}/" infrastructure.yml && grep ${AWS_ACCOUNT_ID} infrastructure.yml
 ```
 
 AWS CLIからスタック作成を実行します。
 
 ```bash
 $ pwd
-/home/ec2-user/environment/iac-story-code/cloudformation
+/environment/iac-story-code/cloudformation
 
 # IAMの作成を伴うのでcapabilitiesの指定が必要
 $ aws cloudformation create-stack --stack-name cnis-infrastructure --template-body file://infrastructure.yml --capabilities CAPABILITY_NAMED_IAM                                                                                         
 {
-    "StackId": "arn:aws:cloudformation:ap-northeast-1:xxxxxxxx:stack/cnis-infrastructure/addb4cf0-cfdb-11eb-8dff-0e9cfcf32e9f"
+    "StackId": "arn:aws:cloudformation:ap-northeast-1:123456789012:stack/cnis-infrastructure/addb4cf0-cfdb-11eb-8dff-0e9cfcf32e9f"
 }
+
+# リソースの作成状況を確認します。次のように、LogicalResourceId:cnis-infrastructureのResourceStatusがCREATE_COMPLETEとなるまで待ちましょう。
+# watchコマンドにより、数秒おきにCloudFormationのスタック状態が更新されます。
+# 完了まで数分かかることがあります。
+$ watch "aws cloudformation describe-stack-events --stack-name cnis-infrastructure | head -20" 
+:
+{
+    "StackEvents": [
+        {
+            "StackId": "arn:aws:cloudformation:ap-northeast-1:123456789012:stack/cnis-infrastructure/46e59460-d03f-11eb-92eb-0e9b5e8bc693",
+            "EventId": "ed5e9d50-d03f-11eb-9e37-068875dc9763",
+            "ResourceStatus": "CREATE_COMPLETE",
+            "ResourceType": "AWS::CloudFormation::Stack",
+            "Timestamp": "2021-06-18T14:17:34.872Z",
+            "StackName": "cnis-infrastructure",
+            "PhysicalResourceId": "arn:aws:cloudformation:ap-northeast-1:123456789012:stack/cnis-infrastructure/46e59460-d03f-11eb-92eb-0e9b5e8bc693",
+            "LogicalResourceId": "cnis-infrastructure"
+        },
+# Ctrl+Cで終了
 ```
 
 ### app-baseスタックのデプロイ
 
-`app-base.yml`を開き、8行目の[AWS_ACCOUNT_ID]を自身のAWSアカウントIDに書き換えてください。
 
-```text
-1	AWSTemplateFormatVersion: "2010-09-09"
-2	Description: Application base parent template
-3
-4	Parameters:
-5	  Template:
-6	    Description: Template URL for each yml file
-7	    Type: String
-8	    Default: https://cnis-cfn-bucket-[AWS_ACCOUNT_ID].s3.ap-northeast-1.amazonaws.com/appbase
-9
+`app-base.yml`のAWSアカウントIDを置き換えます。
+
+```bash
+$ sed -i -e "s/\[AWS_ACCOUNT_ID\]/${AWS_ACCOUNT_ID}/" app-base.yml && grep ${AWS_ACCOUNT_ID} app-base.yml
 ```
 
 AWS CLIからスタック作成を実行します。
@@ -130,8 +135,25 @@ $ pwd
 $ aws cloudformation create-stack --stack-name cnis-appbase --template-body file://app-base.yml
 {
     "StackId": "arn:aws:cloudformation:ap-northeast-1:
-    xxxxxxxx:stack/cnis-appbase/73de9b30-cfde-11eb-8a91-0e2c15a96cb9"
+    123456789012:stack/cnis-appbase/73de9b30-cfde-11eb-8a91-0e2c15a96cb9"
 }
+
+# リソースの作成状況を確認します。次のように、LogicalResourceId:cnis-appbaseのResourceStatusがCREATE_COMPLETEとなるまで待ちましょう。
+$ watch "aws cloudformation describe-stack-events --stack-name cnis-appbase | head -20" 
+:
+{
+    "StackEvents": [
+        {
+            "StackId": "arn:aws:cloudformation:ap-northeast-1:123456789012:stack/cnis-appbase/7bc67f30-d041-11eb-b500-0ac1c07a5d9b",
+            "EventId": "85a3d390-d041-11eb-8dff-0e9cfcf32e9f",
+            "ResourceStatus": "CREATE_COMPLETE",
+            "ResourceType": "AWS::CloudFormation::Stack",
+            "Timestamp": "2021-06-18T14:28:59.840Z",
+            "StackName": "cnis-appbase",
+            "PhysicalResourceId": "arn:aws:cloudformation:ap-northeast-1:123456789012:stack/cnis-appbase/7bc67f30-d041-11eb-b500-0ac1c07a5d9b",
+            "LogicalResourceId": "cnis-appbase"
+        },
+# Ctrl+Cで終了
 ```
 
 ### ECRへのアプリコンテナ登録
@@ -169,18 +191,11 @@ $ AWS_ECR_REPO_NAME=`aws ecr describe-repositories | jq .repositories[].reposito
 
 ### applicationスタックのデプロイ
 
-`application.yml`を開き、8行目の[AWS_ACCOUNT_ID]を自身のAWSアカウントIDに書き換えてください。
+`application.yml`のAWSアカウントIDを置き換えます。
 
-```text
-1	AWSTemplateFormatVersion: "2010-09-09"
-2	Description: Application parent template
-3
-4	Parameters:
-5	  Template:
-6	    Description: Template URL for each yml file
-7	    Type: String
-8	    Default: https://cnis-cfn-bucket-[AWS_ACCOUNT_ID].s3.ap-northeast-1.amazonaws.com/application
-9
+```bash
+$ cd ~/environment/iac-story-code/cloudformation
+$ sed -i -e "s/\[AWS_ACCOUNT_ID\]/${AWS_ACCOUNT_ID}/" application.yml && grep ${AWS_ACCOUNT_ID} application.yml
 ```
 
 AWS CLIからスタック作成を実行します。
@@ -191,9 +206,28 @@ $ pwd
 
 $ aws cloudformation create-stack --stack-name cnis-application --template-body file://application.yml                                                                           
 {
-    "StackId": "arn:aws:cloudformation:ap-northeast-1:xxxxxxxx:stack/cnis-infrastructure/addb4cf0-cfdb-11eb-8dff-0e9cfcf32e9f"
+    "StackId": "arn:aws:cloudformation:ap-northeast-1:123456789012:stack/cnis-infrastructure/addb4cf0-cfdb-11eb-8dff-0e9cfcf32e9f"
 }
+
+# リソースの作成状況を確認します。次のように、LogicalResourceId:cnis-applicationのResourceStatusがCREATE_COMPLETEとなるまで待ちましょう。
+# 完了まで数分かかることがあります。
+$ watch "aws cloudformation describe-stack-events --stack-name cnis-application | head -20" 
+:
+{
+    "StackEvents": [
+        {
+            "StackId": "arn:aws:cloudformation:ap-northeast-1:123456789012:stack/cnis-application/4ab99f70-d042-11eb-a387-0ea6b7b9f1b7",
+            "EventId": "125727a0-d043-11eb-88bf-069d1cdf7719",
+            "ResourceStatus": "CREATE_COMPLETE",
+            "ResourceType": "AWS::CloudFormation::Stack",
+            "Timestamp": "2021-06-18T14:40:05.392Z",
+            "StackName": "cnis-application",
+            "PhysicalResourceId": "arn:aws:cloudformation:ap-northeast-1:123456789012:stack/cnis-application/4ab99f70-d042-11eb-a387-0ea6b7b9f1b7",
+            "LogicalResourceId": "cnis-application"
+        },
+# Ctrl+Cで終了
 ```
+
 
 ## アプリのデプロイ確認
 
