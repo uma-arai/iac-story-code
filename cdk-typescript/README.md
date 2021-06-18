@@ -9,6 +9,8 @@
 
 ## セットアップ
 
+CDKを実行するための事前設定を行います。
+
 ### ツールのバージョン
 
 今回ハンズオン環境として利用するCloud9にはデフォルトでCDKがインストールされています。
@@ -65,6 +67,8 @@ $ cdk bootstrap
 
 ### infrastructureスタックのデプロイ
 
+Cloud9 IDEを開き、画面下部のコマンドラインにて以下を入力してCDKの実行をします。
+
 ```bash
 $ pwd
 /home/ec2-user/environment/iac-story-code/cdk-typescript
@@ -73,6 +77,8 @@ $ npm run deploy:dev:base
 ```
 
 ### app-baseスタックのデプロイ
+
+同様にコマンドラインにて以下を入力してCDKの実行をします。
 
 ```bash
 $ pwd
@@ -84,6 +90,8 @@ $ npm run deploy:dev:appb
 
 ### managementスタックのデプロイ
 
+同様にコマンドラインにて以下を入力してCDKの実行をします。
+
 ```bash
 $ pwd
 /home/ec2-user/environment/iac-story-code/cdk-typescript
@@ -91,8 +99,39 @@ $ pwd
 $ npm run deploy:dev:iam
 ```
 
-### ECRへコンテナイメージの登録
-TODO：新井さんのを持ってくる
+## ECRへのアプリコンテナ登録
+
+作られたAWSリソースにおいて、ECSはECRからコンテナイメージを取得してデプロイするのですが、
+現状ではECRにコンテナが登録されていません。
+そこで、次に従ってサンプルアプリをコンテナビルドし、ECRに対してプッシュします。
+
+```bash
+
+# Dockerビルドにてコンテナイメージを作成
+$ cd ~/environment/iac-story-code/app/
+$ export CONTAINER_NAME="cnisapp"
+$ export CONTAINER_TAG="init"
+$ docker build -t ${CONTAINER_NAME}:${CONTAINER_TAG} .
+Sending build context to Docker daemon  11.82MB
+Step 1/14 : FROM golang:1.16.5-alpine3.13 AS build-env
+1.16.5-alpine3.13: Pulling from library/golang
+:
+Successfully built 7aa88fd39158
+Successfully tagged cnisapp:v1
+
+# ECRにログインしてコンテナイメージをプッシュ
+$ export AWS_ACCOUNT_ID=`aws sts get-caller-identity | jq .Account -r`
+$ $(aws ecr get-login --no-include-email --registry-ids ${AWS_ACCOUNT_ID} --region ap-northeast-1)
+
+$ AWS_ECR_URL=`aws ecr describe-repositories | jq .repositories[].repositoryUri -r | grep cnis-ecr-app`; docker tag ${CONTAINER_NAME}:${CONTAINER_TAG} ${AWS_ECR_URL}:${CONTAINER_TAG}
+
+$ docker push ${AWS_ECR_URL}:${CONTAINER_TAG}
+
+# プッシュしたイメージ内容の確認
+$ AWS_ECR_REPO_NAME=`aws ecr describe-repositories | jq .repositories[].repositoryName -r | grep cnis`; aws ecr describe-images --repository-name $AWS_ECR_REPO_NAME
+```
+
+以上でデプロイするコンテナイメージがECRに登録できました。
 
 
 ### appスタックのデプロイ
@@ -194,6 +233,9 @@ $ aws ecr batch-delete-image \
 `failures`が空となっていれば完了です。ECRのダッシュボードでコンテナイメージが削除され、イメージが存在しないことを確認してください。
 
 ### AWSリソースの削除
+
+コマンドラインにて以下を入力してCDKで作成したリソースの破棄をします。
+Yes/Noがきかれるので、`y`を入力して破棄コマンドを実行してください。
 
 ```bash
 $ npm run destroy:all
