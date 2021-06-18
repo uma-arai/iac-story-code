@@ -7,7 +7,6 @@ Parameters:
   ProjectName:
     Type: String
     Default: CloudNativeIaCStory
-  # TODO: Sgは自動で持ってくるようにする
   EgressSg:
     Type: String
     Description: Egress Security group id
