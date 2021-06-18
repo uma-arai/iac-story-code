@@ -121,7 +121,7 @@ $ pwd
 $ npm run deploy:dev:base
 > cdk-typescript@0.1.0 deploy:dev:base /home/ec2-user/environment/iac-story-code/cdk-typescript
 > cdk deploy cnis-infra --context env=dev
-
+:
 cnis-infra
 This deployment will make potentially sensitive changes according to your current security approval level (--require-approval broadening).
 Please confirm you intend to make the following modifications:
