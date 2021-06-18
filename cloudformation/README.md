@@ -35,7 +35,7 @@ aws-cli/1.19.94 Python/2.7.18 Linux/4.14.232-176.381.amzn2.x86_64 botocore/1.20.
 # アカウントIDの取得
 $ AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
 # バケット名の設定
-$ BUCKET_NAME=acnis-cfn-bucket-${AWS_ACCOUNT_ID}
+$ BUCKET_NAME=cnis-cfn-bucket-${AWS_ACCOUNT_ID}
 # リージョン名の設定
 $ REGION=ap-northeast-1
 # S3の作成とパブリックアクセスの禁止設定
@@ -53,22 +53,47 @@ $ aws s3api put-public-access-block \
 いよいよサンプルソースコードを利用してAWSリソースを作成します。
 今回、CloudFormationでは2つのスタックを用意しています。
 
+| スタック           | 内容                                 |
+|----------------|------------------------------------|
+| infrastructure | VPC、サブネットなどネットワーク周りやライフサイクルが長いリソース |
+| application    | ECSサービスなどアプリに必要なリソース               |
+
+それぞれのテンプレートからスタックを作成して、リソースをデプロイします。
+
+### NestしたテンプレートをS3にアップロード
+
+サンプルコードではフラットにCloudFormationを記述するのではなく、Nested Stackを利用しています。親となるスタックからNestされたスタックを利用するためにはテンプレートのURLを指定します。S3にNestしたテンプレートを格納し、S3のURLを指定することとします。
+
+```bash
+$ aws s3 cp infrastructure/ s3://${BUCKET_NAME} --recursive
+$ aws s3 cp application/ s3://${BUCKET_NAME} --recursive
+```
+
 ### infrastructureスタックのデプロイ
 
 ```bash
 $ pwd
 /home/ec2-user/environment/iac-story-code/cloudformation
 
-$ aws cloudformation create-stack --stack-name cnis-vpc --template-body file://infrastructure/vpc.yml
+# IAMの作成を伴うのでcapabilitiesの指定が必要
+$ aws cloudformation create-stack --stack-name cnis-infrastructure --template-body file://infrastructure.yml --capabilities CAPABILITY_NAMED_IAM                                                                                         
 {
-    "StackId": "arn:aws:cloudformation:ap-northeast-1:xxxxxxxx:stack/cnis-vpc/93333e10-cf7e-11eb-82e4-0a2aed0cd69f"
-}
-
-$ aws cloudformation create-stack --stack-name cnis-sg --template-body file://infrastructure/sg.yml --parameter ParameterKey=VpcId,ParameterValue=vpc-062948d7b2cc5ba0f
-{
-    "StackId": "arn:aws:cloudformation:ap-northeast-1:xxxxxxx:stack/cnis-sg/d816e4a0-cf7e-11eb-b7b8-0a9991be8ccf"
+    "StackId": "arn:aws:cloudformation:ap-northeast-1:xxxxxxxx:stack/cnis-infrastructure/addb4cf0-cfdb-11eb-8dff-0e9cfcf32e9f"
 }
 ```
+
+### applicationスタックのデプロイ
+
+```bash
+$ pwd
+/home/ec2-user/environment/iac-story-code/cloudformation
+
+$ aws cloudformation create-stack --stack-name cnis-application --template-body file://application.yml                                                                           
+{
+    "StackId": "arn:aws:cloudformation:ap-northeast-1:xxxxxxxx:stack/cnis-infrastructure/addb4cf0-cfdb-11eb-8dff-0e9cfcf32e9f"
+}
+```
+
 
 
 ## 補記

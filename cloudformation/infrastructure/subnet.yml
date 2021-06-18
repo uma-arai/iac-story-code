@@ -257,5 +257,5 @@ Outputs:
       Name: !Sub ${ResourcePrefix}-private-app-subnet-a
   appSubnet1C:
     Value: !Ref cnisSubnetPrivateApp1C
-    Expo  rt:
+    Export:
       Name: !Sub ${ResourcePrefix}-private-app-subnet-c

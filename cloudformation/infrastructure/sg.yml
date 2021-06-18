@@ -73,8 +73,8 @@ Resources:
       SourceSecurityGroupId: !Ref privateAppSg
 
 Outputs:
-  publicIngressSg:i
-    Value: !Ref pui
+  publicIngressSg:
+    Value: !Ref publicIngressSg
     Export:
       Name: !Sub ${ResourcePrefix}-ingress-sg
   privateAppSg:
@@ -83,4 +83,3 @@ Outputs:
       Name: !Sub ${ResourcePrefix}-app-sg
   privateEgressSg:
     Value: !Ref privateEgressSg
-    
