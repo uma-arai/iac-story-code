@@ -78,6 +78,22 @@ upload: application/ecs.yml to s3://[BUCKET_NAME]/application/ecs.yml
 
 ### infrastructureスタックのデプロイ
 
+`infrastructure.yml`を開き、8行目の[AWS_ACCOUNT_ID]を自身のAWSアカウントIDに書き換えてください。
+
+```text
+1	AWSTemplateFormatVersion: "2010-09-09"
+2	Description: Infrastructure parent template
+3
+4	Parameters:
+5	  Template:
+6	    Description: Template URL for each yml file
+7	    Type: String
+8	    Default: https://cnis-cfn-bucket-[AWS_ACCOUNT_ID].s3.ap-northeast-1.amazonaws.com/infra
+9
+```
+
+AWS CLIからスタック作成を実行します。
+
 ```bash
 $ pwd
 /home/ec2-user/environment/iac-story-code/cloudformation
@@ -90,6 +106,22 @@ $ aws cloudformation create-stack --stack-name cnis-infrastructure --template-bo
 ```
 
 ### app-baseスタックのデプロイ
+
+`app-base.yml`を開き、8行目の[AWS_ACCOUNT_ID]を自身のAWSアカウントIDに書き換えてください。
+
+```text
+1	AWSTemplateFormatVersion: "2010-09-09"
+2	Description: Application base parent template
+3
+4	Parameters:
+5	  Template:
+6	    Description: Template URL for each yml file
+7	    Type: String
+8	    Default: https://cnis-cfn-bucket-[AWS_ACCOUNT_ID].s3.ap-northeast-1.amazonaws.com/appbase
+9
+```
+
+AWS CLIからスタック作成を実行します。
 
 ```bash
 $ pwd
@@ -136,6 +168,22 @@ $ AWS_ECR_REPO_NAME=`aws ecr describe-repositories | jq .repositories[].reposito
 以上でデプロイするコンテナイメージがECRに登録できました。
 
 ### applicationスタックのデプロイ
+
+`application.yml`を開き、8行目の[AWS_ACCOUNT_ID]を自身のAWSアカウントIDに書き換えてください。
+
+```text
+1	AWSTemplateFormatVersion: "2010-09-09"
+2	Description: Application parent template
+3
+4	Parameters:
+5	  Template:
+6	    Description: Template URL for each yml file
+7	    Type: String
+8	    Default: https://cnis-cfn-bucket-[AWS_ACCOUNT_ID].s3.ap-northeast-1.amazonaws.com/application
+9
+```
+
+AWS CLIからスタック作成を実行します。
 
 ```bash
 $ pwd

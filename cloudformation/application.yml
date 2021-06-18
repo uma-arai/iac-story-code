@@ -5,8 +5,7 @@ Parameters:
   Template:
     Description: Template URL for each yml file
     Type: String
-    # TODO: デフォルト値に説明を入れる(https://cnis-cfn-bucket-[AWS_ACCOUNT_ID].s3.ap-northeast-1.amazonaws.com/infra)
-    Default: https://cnis-cfn-bucket.s3.ap-northeast-1.amazonaws.com/application
+    Default: https://cnis-cfn-bucket-[AWS_ACCOUNT_ID].s3.ap-northeast-1.amazonaws.com/application
 
 Resources:
   # ALBの作成
