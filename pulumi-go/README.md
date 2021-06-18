@@ -49,7 +49,7 @@ $ wget https://golang.org/dl/go1.16.5.linux-amd64.tar.gz
 # 展開してバイナリを配置
 sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.16.5.linux-amd64.tar.gz && rm -f go1.16.5.linux-amd64.tar.gz
 
-# 最新のGoバイナリに置き換え
+# 最新のGoバイナリに置き換え
 echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bash_profile && echo "alias go='/usr/local/go/bin/go'" >> ~/.bash_profile && cat ~/.bash_profile | tail && source ~/.bash_profile  
 
 # バージョン確認
@@ -105,8 +105,8 @@ Created project 'pulumi-go'
 
 Please enter your desired stack name.
 To create a stack in an organization, use the format <org-name>/<stack-name> (e.g. `acmecorp/dev`).
-stack name: (dev) main
-Created stack 'main'            # スタック名の入力（mainと入力すること）
+stack name: (dev) main         # スタック名の入力（mainと入力すること）
+Created stack 'main'            
 
 aws:region: The AWS region to deploy into: (us-east-1) ap-northeast-1    # リージョンを入力(ap-northeast-1と入力すること)
 Saved config
@@ -265,7 +265,7 @@ $ while true; do aws ecs list-tasks --cluster cnis-ecs-cluster-app; sleep 10; do
     ]
 }
 :
-# Ctel+C で停止
+# Ctrl+C で停止
 ```
 
 ## アプリの疎通確認
