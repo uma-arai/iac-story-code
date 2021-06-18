@@ -89,7 +89,7 @@ AWS CLIからスタック作成を実行します。
 
 ```bash
 $ pwd
-/environment/iac-story-code/cloudformation
+/home/ec2-user/environment/iac-story-code/cloudformation
 
 # IAMの作成を伴うのでcapabilitiesの指定が必要
 $ aws cloudformation create-stack --stack-name cnis-infrastructure --template-body file://infrastructure.yml --capabilities CAPABILITY_NAMED_IAM                                                                                         
