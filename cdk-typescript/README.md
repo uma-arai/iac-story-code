@@ -253,12 +253,6 @@ cnis-infra: deploying...
  ✅  cnis-infra (no changes)
 
 ︙
-cnis-manage
-cnis-management: deploying...
-
- ✅  cnis-management (no changes)
-
-︙
 IAM Statement Changes
 ┌───┬─────────────────────────────┬────────┬────────────────┬─────────────────────────────────┬───────────┐
 │   │ Resource                    │ Effect │ Action         │ Principal                       │ Condition │
