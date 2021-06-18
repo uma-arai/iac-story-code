@@ -153,6 +153,8 @@ terragrunt version v0.30.3
 Terragruntによりラップされた状態でコールしていきます。
 
 ```bash
+$ cd ~/environment/iac-story-code/terraform/env/dev/
+
 # AWS Providerプラグイン等のインストールするためにinitを実行
 $ terragrunt init
 Initializing modules...
