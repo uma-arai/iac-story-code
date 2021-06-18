@@ -141,48 +141,51 @@ View Live: https://app.pulumi.com/m-arai/pulumi-go/main/previews/568ed8a3-25b0-4
 Downloading plugin: 75.17 MiB / 75.17 MiB [=========================] 100.00% 1s
      Type                                               Name                                               Plan       
  +   pulumi:pulumi:Stack                                pulumi-go-main                                     create     
+ +   ├─ aws:ssm:Parameter                               cnis-ssm-param-cnis-app                            create     
+ +   ├─ aws:iam:Role                                    cnis-ecs-task-execution-role                       create     
  +   ├─ aws:ecs:Cluster                                 cnis-ecs-cluster-app                               create     
  +   │  └─ aws:ecs:Service                              cnis-ecs-service-app                               create     
+ +   ├─ aws:iam:Policy                                  cnis-ecs-task-execution-policy                     create     
  +   ├─ aws:ec2:Vpc                                     cnis-vpc-main                                      create     
- +   │  ├─ aws:ec2:Subnet                               cnis-subnet-private-app-c                          create     
- +   │  ├─ aws:ec2:RouteTable                           cnis-rt-internal                                   create     
- +   │  │  ├─ aws:ec2:RouteTableAssociation             cnis-rta-internal-private-app-c                    create     
- +   │  │  ├─ aws:ec2:VpcEndpointRouteTableAssociation  cnis-rta-internal-vpce-s3                          create     
- +   │  │  └─ aws:ec2:RouteTableAssociation             cnis-rta-internal-private-app-a                    create     
- +   │  ├─ aws:ec2:InternetGateway                      cnis-igw-main                                      create     
- +   │  ├─ aws:ec2:Subnet                               cnis-subnet-private-egress-a                       create     
- +   │  ├─ aws:ec2:Subnet                               cnis-subnet-private-egress-c                       create     
- +   │  ├─ aws:ec2:VpcEndpoint                          cnis-vpce-s3                                       create     
- +   │  ├─ aws:ec2:Subnet                               cnis-subnet-public-ingress-a                       create     
  +   │  ├─ aws:alb:TargetGroup                          cnis-alb-tg-app                                    create     
+ +   │  ├─ aws:ec2:Subnet                               cnis-subnet-private-egress-c                       create     
+ +   │  ├─ aws:ec2:RouteTable                           cnis-rt-internal                                   create     
+ +   │  │  ├─ aws:ec2:RouteTableAssociation             cnis-rta-internal-private-app-a                    create     
+ +   │  │  ├─ aws:ec2:VpcEndpointRouteTableAssociation  cnis-rta-internal-vpce-s3                          create     
+ +   │  │  └─ aws:ec2:RouteTableAssociation             cnis-rta-internal-private-app-c                    create     
+ +   │  ├─ aws:ec2:InternetGateway                      cnis-igw-main                                      create     
+ +   │  ├─ aws:ec2:Subnet                               cnis-subnet-public-ingress-a                       create     
+ +   │  ├─ aws:ec2:Subnet                               cnis-subnet-private-egress-a                       create     
  +   │  ├─ aws:ec2:Subnet                               cnis-subnet-private-app-a                          create     
+ +   │  ├─ aws:ec2:VpcEndpoint                          cnis-vpce-s3                                       create     
  +   │  ├─ aws:ec2:Subnet                               cnis-subnet-public-ingress-c                       create     
+ +   │  ├─ aws:ec2:Subnet                               cnis-subnet-private-app-c                          create     
  +   │  ├─ aws:ec2:RouteTable                           cnis-rt-public                                     create     
- +   │  │  ├─ aws:ec2:RouteTableAssociation             cnis-rta-public-public-ingress-c                   create     
- +   │  │  └─ aws:ec2:RouteTableAssociation             cnis-rta-public-public-ingress-a                   create     
+ +   │  │  ├─ aws:ec2:RouteTableAssociation             cnis-rta-public-public-ingress-a                   create     
+ +   │  │  └─ aws:ec2:RouteTableAssociation             cnis-rta-public-public-ingress-c                   create     
  +   │  ├─ aws:alb:LoadBalancer                         cnis-alb-app                                       create     
  +   │  │  └─ aws:lb:Listener                           cnis-alb-lsnr-app                                  create     
- +   │  ├─ aws:ec2:VpcEndpoint                          cnis-vpce-ecr-api                                  create     
+ +   │  ├─ aws:ec2:VpcEndpoint                          cnis-vpce-ssm                                      create     
  +   │  ├─ aws:ec2:VpcEndpoint                          cnis-vpce-logs                                     create     
- +   │  └─ aws:ec2:VpcEndpoint                          cnis-vpce-ecr-dkr                                  create     
- +   ├─ aws:iam:Role                                    cnis-ecs-task-execution-role                       create     
+ +   │  ├─ aws:ec2:VpcEndpoint                          cnis-vpce-ecr-dkr                                  create     
+ +   │  └─ aws:ec2:VpcEndpoint                          cnis-vpce-ecr-api                                  create     
  +   ├─ aws:cloudwatch:LogGroup                         cnis-logs-app                                      create     
  +   ├─ aws:ecr:Repository                              cnis-ecr-app                                       create     
- +   ├─ aws:ssm:Parameter                               cnis-ssm-param-cnis-app                            create     
- +   ├─ aws:ec2:SecurityGroup                           cnis-sg-public-ingress                             create     
  +   ├─ aws:iam:RolePolicyAttachment                    cnis-ecs-task-execution-managed-policy-attachment  create     
+ +   ├─ aws:iam:RolePolicyAttachment                    cnis-ecs-task-execution-policy-attachment          create     
+ +   ├─ aws:ec2:SecurityGroup                           cnis-sg-public-ingress                             create     
  +   ├─ aws:ecs:TaskDefinition                          cnis-ecs-taskdef-app                               create     
  +   ├─ aws:ec2:SecurityGroup                           cnis-sg-private-app                                create     
  +   └─ aws:ec2:SecurityGroup                           cnis-sg-private-egress                             create     
  
 Resources:
-    + 34 to create
+    + 37 to create  
 
 # Upによる実際のAWSリソース作成
 $ pulumi up
 :
 Resources:
-    + 34 to create
+    + 37 to create
 
 # 下記のように選択を求められたら、必要に応じてdetailsを選択し、設定内容を確認します。
 # その後、問題なければyesを選択してリソースを作成します。
@@ -194,7 +197,7 @@ Do you want to perform this update?  [Use arrows to move, enter to select, type 
 # Pulumi Upが実行されるので、以下の様に出力されるとAWSリソース作成が完了です。
 :
 Resources:
-    + 34 created
+    + 37 created
 
 Duration: 2m44s
 
