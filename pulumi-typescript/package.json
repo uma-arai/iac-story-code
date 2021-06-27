@@ -1,7 +1,12 @@
 {
     "name": "cnis",
     "devDependencies": {
-        "@types/node": "^10.0.0"
+        "@types/node": "^10.0.0",
+        "@typescript-eslint/eslint-plugin": "^4.28.0",
+        "@typescript-eslint/parser": "^4.28.0",
+        "eslint": "^7.29.0",
+        "eslint-config-prettier": "8.3.0",
+        "prettier": "2.3.2"
     },
     "dependencies": {
         "@pulumi/pulumi": "^3.0.0",
