@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Logs by Cloud Native IaC Story 
+Parameters:
+  ResourcePrefix:
+    Type: String
+    Default: cnis
+
+Resources:
+  cnisCloudWatchLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub ${ResourcePrefix}-logs-app
+      RetentionInDays: 7
+
+Outputs:
+  logs:
+    Value: !Ref cnisCloudWatchLogs
+    Export: 
+      Name: !Sub ${ResourcePrefix}-logs

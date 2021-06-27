@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ECS Service by Cloud Native IaC Story 
+Parameters:
+  ResourcePrefix:
+    Type: String
+    Default: cnis
+  ProjectName:
+    Type: String
+    Default: CloudNativeIaCStory
+  AlbTargetGroup:
+    Type: String
+    Description: ID for target group of ALB
+  ContainerLogGroupId:
+    Type: String
+    Description: ID for log group of ecs container
+
+Resources:
+  cnisTaskDef:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+        - Name: !Sub ${ResourcePrefix}-ecs-container-app
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ResourcePrefix}-ecr-app:init" 
+          Cpu: 256
+          MemoryReservation: 512
+          Essential: true
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref ContainerLogGroupId
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-stream-prefix: ecs
+          PortMappings:
+            - HostPort: 80
+              Protocol: tcp
+              ContainerPort: 80
+          Secrets:
+            - Name: SSM_PARAM_TEST
+              ValueFrom: 
+                Fn::ImportValue: !Sub "${ResourcePrefix}-ssm-param"
+      Cpu: "256"
+      ExecutionRoleArn: !ImportValue ecsTaskExecutionRole
+      Family: !Sub ${ResourcePrefix}-ecs-taskdef-app
+      Memory: "512"
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+  
+  cnisEcsService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: 
+        Fn::ImportValue: !Sub ${ResourcePrefix}-ecs-cluster-app
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DeploymentController:
+        Type: ECS
+      DesiredCount: 1
+      EnableECSManagedTags: true
+      HealthCheckGracePeriodSeconds: 60
+      LaunchType: FARGATE
+      LoadBalancers:
+        - ContainerName: !Sub ${ResourcePrefix}-ecs-container-app
+          ContainerPort: 80
+          TargetGroupArn: !Ref AlbTargetGroup
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups: 
+            - Fn::ImportValue: !Sub ${ResourcePrefix}-app-sg
+          Subnets:
+            - Fn::ImportValue: !Sub ${ResourcePrefix}-private-app-subnet-a
+            - Fn::ImportValue: !Sub ${ResourcePrefix}-private-app-subnet-c
+      PlatformVersion: "1.4.0"
+      ServiceName: !Sub ${ResourcePrefix}-ecs-service-app
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+      TaskDefinition: !Ref cnisTaskDef

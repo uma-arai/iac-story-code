@@ -1,0 +1,31 @@
+[
+  {
+    "name": "<CONTAINER_NAME>",
+    "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/<ECR_REPOS_NAME>:init",
+    "cpu": 256,
+    "memoryReservation": 512,
+    "essential": true,
+    "network_mode": "awsvpc",
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "<LOG_GROUP>",
+        "awslogs-region": "<AWS_REGION>",
+        "awslogs-stream-prefix": "ecs"
+      }
+    },
+    "portMappings": [
+      {
+        "hostPort": 80,
+        "protocol": "tcp",
+        "containerPort": 80
+      }
+    ],
+    "secrets": [
+      {
+        "valueFrom": "<SSM_PARAM_TEST_ARN>",
+        "name": "SSM_PARAM_TEST"
+      }
+    ]
+  }
+]

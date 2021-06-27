@@ -1,0 +1,13 @@
+rule cnis_vpc_dns_check {
+    AWS::EC2::VPC {
+        Properties {
+                EnableDnsHostnames == true
+                EnableDnsSupport == true
+        }
+    }
+}
+    
+let re = Resources.*[Type == 'AWS::EC2::Subnet']
+rule nametag when %re !empty {
+  %re.Properties.Tags exists
+}

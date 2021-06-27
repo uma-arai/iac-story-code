@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Application Load balancer by Cloud Native IaC Story 
+Parameters:
+  ResourcePrefix:
+    Type: String
+    Default: cnis
+  ProjectName:
+    Type: String
+    Default: CloudNativeIaCStory
+
+Resources:
+  cnisAlb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub ${ResourcePrefix}-alb-app
+      IpAddressType: ipv4
+      LoadBalancerAttributes:
+        - Key: "idle_timeout.timeout_seconds"
+          Value: "60"
+      Scheme: internet-facing
+      SecurityGroups:
+        - Fn::ImportValue: !Sub "${ResourcePrefix}-ingress-sg"
+      Subnets:
+        - Fn::ImportValue: !Sub "${ResourcePrefix}-public-ingress-subnet-a"
+        - Fn::ImportValue: !Sub "${ResourcePrefix}-public-ingress-subnet-c"
+      Type: application
+
+  cnisAlbTg:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /healthcheck
+      HealthCheckPort: "80"
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      Name: !Sub ${ResourcePrefix}-alb-tg-app
+      Port: 80
+      Protocol: HTTP
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-alb-tg-app
+        - Key: Project
+          Value: !Ref ProjectName
+      TargetType: ip
+      UnhealthyThresholdCount: 2
+      VpcId: 
+        Fn::ImportValue: !Sub "${ResourcePrefix}Vpc"
+
+  cnisAlbListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref cnisAlbTg
+      LoadBalancerArn: !Ref cnisAlb
+      Port: 80
+      Protocol: HTTP
+
+Outputs:
+  cnisAlbTg:
+    Value: !Ref cnisAlbTg
+    

@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Container repository by Cloud Native IaC Story 
+Parameters:
+  ResourcePrefix:
+    Type: String
+    Default: cnis
+  ProjectName:
+    Type: String
+    Default: CloudNativeIaCStory
+
+Resources:
+  cnisEcr:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${ResourcePrefix}-ecr-app
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      ImageTagMutability: IMMUTABLE
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-ecr-app
+        - Key: Project
+          Value: !Ref ProjectName
+
+Outputs:
+  cnisEcr:
+    Value: !Ref cnisEcr
+    Export:
+      Name: !Sub ${ResourcePrefix}-ecr

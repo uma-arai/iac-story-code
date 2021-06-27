@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Application parent template
+
+Parameters: 
+  Template:
+    Description: Template URL for each yml file
+    Type: String
+    Default: https://cnis-cfn-bucket-[AWS_ACCOUNT_ID].s3.ap-northeast-1.amazonaws.com/application
+
+Resources:
+  # ALBの作成
+  CnisAppAlb:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub
+          - ${URL}/alb.yml
+          - { URL: !Ref Template }
+  
+  # CloudWatch Logsの作成
+  CnisAppCloudWatchLogs:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub
+          - ${URL}/cloudwatch.yml
+          - { URL: !Ref Template }
+
+  # ECSサービスの作成
+  CnisAppEcsService:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub
+          - ${URL}/ecs.yml
+          - { URL: !Ref Template }
+      Parameters: 
+        AlbTargetGroup: !GetAtt CnisAppAlb.Outputs.cnisAlbTg
+        ContainerLogGroupId: !GetAtt CnisAppCloudWatchLogs.Outputs.logs

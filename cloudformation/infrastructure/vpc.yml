@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: VPC Stack by Cloud Native IaC Story 
+Parameters:
+  ResourcePrefix:
+    Type: String
+    Default: cnis
+  ProjectName:
+    Type: String
+    Default: CloudNativeIaCStory
+
+Resources:
+  cnisVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-vpc-main
+        - Key: Project
+          Value: !Ref ProjectName  
+
+Outputs:
+  vpc:
+    Value: !Ref cnisVpc
+    Export:
+      Name: cnisVpc
+
+  
