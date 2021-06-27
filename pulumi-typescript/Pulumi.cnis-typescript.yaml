@@ -1,0 +1,6 @@
+config:
+  aws:region: ap-northeast-1
+  cnis:project_name: CloudNativeIaCStory
+  cnis:resource_prefix: cnis
+  cnis:secret_value:
+    secure: AAABABC3njdu4YSbbqFgIlfS4QgG4TRWpPv+Oe6eGsk1EpkCoqQrMWhdx2bnm46sfkMb3znp
