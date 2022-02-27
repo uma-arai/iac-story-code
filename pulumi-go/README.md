@@ -28,14 +28,15 @@ Pulumiのアカウントを所有していない方は以下手順に従って�
 
 ```bash
 # Pulumiのバイナリダウンロード
-$ wget https://get.pulumi.com/releases/sdk/pulumi-v3.4.0-linux-x64.tar.gz
+$ VERSION=3.25.0
+$ wget https://get.pulumi.com/releases/sdk/pulumi-v${VERSION}-linux-x64.tar.gz
 
 # 展開してバイナリを配置&ゴミ消し
-tar zxvf pulumi-v3.4.0-linux-x64.tar.gz; sudo mv -f pulumi/* /usr/local/bin/ && rm -rf pulumi/ && rm -f pulumi-v3.4.0-linux-x64.tar.gz 
+tar zxvf pulumi-v${VERSION}-linux-x64.tar.gz; sudo mv -f pulumi/* /usr/local/bin/ && rm -rf pulumi/ && rm -f pulumi-v${VERSION}-linux-x64.tar.gz 
 
 # バージョン確認
 $ pulumi version
-v3.4.0
+v3.25.0
 ```
 
 ### Goのインストール
@@ -119,8 +120,8 @@ Your new project is ready to go!
 
 To perform an initial deployment, run 'pulumi up'
 
-# pulumiプロジェクトを作成した際、いくつかのファイルが更新されてしまうので、checkoutで戻しておく
-$ git checkout Pulumi.main.yaml go.mod main.go
+# pulumiプロジェクトを作成した際、いくつかのファイルが更新されてしまうので、restoreで戻しておく
+$ git restore Pulumi.main.yaml go.mod main.go
 
 # パラメータストアに秘匿な情報を受け渡すため、以下のようにシークレットを追加する
 $ pulumi config set --secret cnis:secret_value "Cloud Native IaC Story"
