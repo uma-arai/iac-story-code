@@ -197,19 +197,91 @@ $ aws iam list-users
 IaCによってはプロバイダーのダウンロードを行います。
 Cloud9のデフォルトボリュームだとサイズが足りないので、別途EBSをアタッチします。
 
-1. AWS マネジメントコンソールのトップ 画面上部の [サービス] タブより [EC2] を選択。
-2. EC2ダッシュボードの左側ナビゲーションメニューから [インスタンス] を選択。
-3. インスタンス一覧画面から Name 列で [aws-cloud9-cnis-playground-] のインスタンスを選択し、画面下部の [ストレージ] を選択。
-4. [vol-**] から始まるボリュームIDを控えておく。
-5. EC2ダッシュボードの左側ナビゲーションメニューから [ボリューム] を選択。
-6. 手順4.で選択したボリュームID選択し、画面上部の [アクション] → [ボリュームの変更] を選択。
-7. ボリュームの変更画面上の [サイズ] を10 → 30 に変更した後、[変更] ボタンを押下。
-8. ボリュームを変更してもよいか確認する旨が表示されるので [はい] を選択。
-9. ボリュームの変更リクエストが成功しました、と表示されることを確認して[閉じる] ボタンを押し、ボリューム一覧画面の右上の更新ボタンを押してサイズが変更されることを確認。
+次のシェルファイルを作成します。名称は`resize.sh`としてください。
 
-以上でEBSボリュームサイズの変更作業は完了です。
-ディスクサイズ拡張を確実に反映させるため、インスタンスを再起動させておきましょう。
+```shell: resize.sh
+#!/bin/bash
 
+# Specify the desired volume size in GiB as a command line argument. If not specified, default to 20 GiB.
+SIZE=${1:-20}
+
+# Get the ID of the environment host Amazon EC2 instance.
+INSTANCEID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
+REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/\(.*\)[a-z]/\1/')
+
+# Get the ID of the Amazon EBS volume associated with the instance.
+VOLUMEID=$(aws ec2 describe-instances \
+  --instance-id $INSTANCEID \
+  --query "Reservations[0].Instances[0].BlockDeviceMappings[0].Ebs.VolumeId" \
+  --output text \
+  --region $REGION)
+
+# Resize the EBS volume.
+aws ec2 modify-volume --volume-id $VOLUMEID --size $SIZE
+
+# Wait for the resize to finish.
+while [ \
+  "$(aws ec2 describe-volumes-modifications \
+    --volume-id $VOLUMEID \
+    --filters Name=modification-state,Values="optimizing","completed" \
+    --query "length(VolumesModifications)"\
+    --output text)" != "1" ]; do
+sleep 1
+done
+
+#Check if we're on an NVMe filesystem
+if [[ -e "/dev/xvda" && $(readlink -f /dev/xvda) = "/dev/xvda" ]]
+then
+  # Rewrite the partition table so that the partition takes up all the space that it can.
+  sudo growpart /dev/xvda 1
+
+  # Expand the size of the file system.
+  # Check if we're on AL2
+  STR=$(cat /etc/os-release)
+  SUB="VERSION_ID=\"2\""
+  if [[ "$STR" == *"$SUB"* ]]
+  then
+    sudo xfs_growfs -d /
+  else
+    sudo resize2fs /dev/xvda1
+  fi
+
+else
+  # Rewrite the partition table so that the partition takes up all the space that it can.
+  sudo growpart /dev/nvme0n1 1
+
+  # Expand the size of the file system.
+  # Check if we're on AL2
+  STR=$(cat /etc/os-release)
+  SUB="VERSION_ID=\"2\""
+  if [[ "$STR" == *"$SUB"* ]]
+  then
+    sudo xfs_growfs -d /
+  else
+    sudo resize2fs /dev/nvme0n1p1
+  fi
+fi
+```
+
+resizeシェルを実行してディスク容量を確保します。`data blocks changed`と表示されればOKです。再度dfコマンドを実行し、ディスクの空き領域が増えていることも確認しておきます。
+
+```bash: resizeシェルの実行
+$ ls
+resize.sh
+
+$ sh resize.sh 30
+・・・
+data blocks changed from 2620923 to 7863803
+
+$ df -h
+Filesystem      Size  Used Avail Use% Mounted on
+devtmpfs        474M     0  474M   0% /dev
+tmpfs           492M     0  492M   0% /dev/shm
+tmpfs           492M  456K  492M   1% /run
+tmpfs           492M     0  492M   0% /sys/fs/cgroup
+/dev/xvda1       30G  8.1G   22G  27% /
+tmpfs            99M     0   99M   0% /run/user/1000
+```
 
 #### 各種ツールのインストール
 
