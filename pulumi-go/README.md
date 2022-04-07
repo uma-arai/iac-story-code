@@ -48,13 +48,13 @@ v3.25.0
 $ wget https://golang.org/dl/go1.16.5.linux-amd64.tar.gz
 
 # 展開してバイナリを配置
-sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.16.5.linux-amd64.tar.gz && rm -f go1.16.5.linux-amd64.tar.gz
+$ sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.16.5.linux-amd64.tar.gz && rm -f go1.16.5.linux-amd64.tar.gz
 
 # 最新のGoバイナリに置き換え
-echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bash_profile && echo "alias go='/usr/local/go/bin/go'" >> ~/.bash_profile && cat ~/.bash_profile | tail && source ~/.bash_profile  
+$ echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bash_profile && echo "alias go='/usr/local/go/bin/go'" >> ~/.bash_profile && cat ~/.bash_profile | tail && source ~/.bash_profile  
 
 # バージョン確認
-& go version
+$ go version
 go version go1.16.5 linux/amd64
 ```
 
