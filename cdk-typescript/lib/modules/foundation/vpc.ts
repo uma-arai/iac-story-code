@@ -1,8 +1,12 @@
-import * as cdk from "@aws-cdk/core";
-import { Construct } from "@aws-cdk/core";
-import { IVpc, Vpc as CoreVpc } from "@aws-cdk/aws-ec2";
-import { SubnetConfiguration } from "@aws-cdk/aws-ec2/lib/vpc";
 import constants from "../../../constants";
+import {
+  IVpc,
+  Vpc as CoreVpc,
+  SubnetConfiguration,
+  IpAddresses,
+} from "aws-cdk-lib/aws-ec2";
+import { Construct } from "constructs";
+import { Tags } from "aws-cdk-lib";
 
 interface IVpcProps {
   cidr: string;
@@ -18,7 +22,7 @@ export class Vpc extends Construct {
     const { cidr, subnetConfigurations } = props;
 
     this.vpc = new CoreVpc(this, "vpc", {
-      cidr,
+      ipAddresses: IpAddresses.cidr(cidr),
       maxAzs: 2,
       natGateways: 0,
       subnetConfiguration: subnetConfigurations.map((subnet) => {
@@ -29,6 +33,6 @@ export class Vpc extends Construct {
       }),
     });
 
-    cdk.Tags.of(this.vpc).add("Name", `${constants.ServicePrefix}-vpc`);
+    Tags.of(this.vpc).add("Name", `${constants.ServicePrefix}-vpc`);
   }
 }

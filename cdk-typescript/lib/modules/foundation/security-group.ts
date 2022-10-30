@@ -1,14 +1,15 @@
+import constants from "../../../constants";
+import { SecurityGroupNameType } from "../../../model";
 import {
   ISecurityGroup,
   IVpc,
   Peer,
   Port,
   SecurityGroup,
-} from "@aws-cdk/aws-ec2";
-import { Construct, Tags } from "@aws-cdk/core";
-import { SecurityGroupProps } from "@aws-cdk/aws-ec2/lib/security-group";
-import constants from "../../../constants";
-import { SecurityGroupNameType } from "../../../model";
+  SecurityGroupProps,
+} from "aws-cdk-lib/aws-ec2";
+import { Construct } from "constructs";
+import { Tags } from "aws-cdk-lib";
 
 type SgType = Pick<SecurityGroupProps, "securityGroupName" | "description">;
 type SecurityGroupsIds = {

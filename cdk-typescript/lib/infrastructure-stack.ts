@@ -1,16 +1,17 @@
-import { Construct, Stack, Tags } from "@aws-cdk/core";
-import { ISecurityGroup, IVpc, SubnetType } from "@aws-cdk/aws-ec2";
 import { Vpc as CnisVpc } from "./modules/foundation/vpc";
 import constants from "../constants";
 import { ControlPlane } from "./modules/services/control-plane";
 import { Parameter } from "./modules/parameter";
 import { SecurityGroups } from "./modules/foundation/security-group";
 import { VpcEndpoint } from "./modules/foundation/vpce";
-import { ICluster } from "@aws-cdk/aws-ecs";
 import { parameterKeys } from "../params";
 import { validateIpRange } from "./helper";
-import { IRole } from "@aws-cdk/aws-iam";
 import { Iam as BaseIam } from "./modules/foundation/iam";
+import { Stack, Tags } from "aws-cdk-lib";
+import { ISecurityGroup, IVpc, SubnetType } from "aws-cdk-lib/aws-ec2";
+import { IRole } from "aws-cdk-lib/aws-iam";
+import { Construct } from "constructs";
+import { ICluster } from "aws-cdk-lib/aws-ecs";
 
 export class CnisInfraStack extends Stack {
   readonly vpc: IVpc;
@@ -39,11 +40,11 @@ export class CnisInfraStack extends Stack {
         },
         {
           name: "app",
-          subnetType: SubnetType.ISOLATED,
+          subnetType: SubnetType.PRIVATE_ISOLATED,
         },
         {
           name: "egress",
-          subnetType: SubnetType.ISOLATED,
+          subnetType: SubnetType.PRIVATE_ISOLATED,
         },
       ],
     });

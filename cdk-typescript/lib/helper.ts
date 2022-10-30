@@ -1,5 +1,5 @@
-import { Construct } from "@aws-cdk/core";
 import { ICnisContext } from "../model";
+import { Construct } from "constructs";
 
 /**
  *

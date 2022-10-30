@@ -1,4 +1,4 @@
-import { IParameter } from "@aws-cdk/aws-ssm";
+import { IParameter } from "aws-cdk-lib/aws-ssm";
 
 export interface ICnisContext {
   serviceParameters: {

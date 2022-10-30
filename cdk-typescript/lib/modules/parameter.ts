@@ -1,6 +1,6 @@
-import { IParameter, StringParameter } from "@aws-cdk/aws-ssm";
-import { Construct } from "@aws-cdk/core";
 import constants from "../../constants";
+import { IParameter, StringParameter } from "aws-cdk-lib/aws-ssm";
+import { Construct } from "constructs";
 
 export interface IParameterTypes {
   [key: string]: string;

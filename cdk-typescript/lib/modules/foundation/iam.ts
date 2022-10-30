@@ -1,4 +1,4 @@
-import * as cdk from "@aws-cdk/core";
+import constants from "../../../constants";
 import {
   Effect,
   IRole,
@@ -6,13 +6,13 @@ import {
   PolicyStatement,
   Role,
   ServicePrincipal,
-} from "@aws-cdk/aws-iam";
-import constants from "../../../constants";
+} from "aws-cdk-lib/aws-iam";
+import { Construct } from "constructs";
 
-export class Iam extends cdk.Construct {
+export class Iam extends Construct {
   readonly ecsTaskExecutionRole: IRole;
 
-  constructor(scope: cdk.Construct, id: string) {
+  constructor(scope: Construct, id: string) {
     super(scope, id);
 
     // NOTE: AWS側で用意されているマネージドポリシーであるAWSCodeDeployRoleForECSLimitedが

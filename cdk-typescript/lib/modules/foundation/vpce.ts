@@ -1,4 +1,5 @@
-import { Construct, Tags } from "@aws-cdk/core";
+import { SecurityGroupNameType } from "../../../model";
+import constants from "../../../constants";
 import {
   GatewayVpcEndpoint,
   GatewayVpcEndpointAwsService,
@@ -7,9 +8,9 @@ import {
   ISecurityGroup,
   IVpc,
   Port,
-} from "@aws-cdk/aws-ec2";
-import { SecurityGroupNameType } from "../../../model";
-import constants from "../../../constants";
+} from "aws-cdk-lib/aws-ec2";
+import { Construct } from "constructs";
+import { Tags } from "aws-cdk-lib";
 
 interface IVpcEndpointProps {
   vpc: IVpc;

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import * as cdk from "@aws-cdk/core";
+import * as cdk from "aws-cdk-lib";
 import { CnisInfraStack } from "../lib/infrastructure-stack";
 import { AppStack } from "../lib/app-stack";
 import constants from "../constants";

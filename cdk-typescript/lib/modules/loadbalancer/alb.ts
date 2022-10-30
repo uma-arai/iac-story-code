@@ -1,6 +1,4 @@
-import * as cdk from "@aws-cdk/core";
-import { Duration, Tags } from "@aws-cdk/core";
-import { ISecurityGroup, IVpc } from "@aws-cdk/aws-ec2";
+import constants from "../../../constants";
 import {
   ApplicationListener,
   ApplicationLoadBalancer,
@@ -11,22 +9,24 @@ import {
   IpAddressType,
   ITargetGroup,
   ListenerAction,
-  Protocol,
   TargetType,
-} from "@aws-cdk/aws-elasticloadbalancingv2";
-import constants from "../../../constants";
+  Protocol,
+} from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import { ISecurityGroup, IVpc } from "aws-cdk-lib/aws-ec2";
+import { Duration, Tags } from "aws-cdk-lib";
+import { Construct } from "constructs";
 
 export interface IAlbProps {
   vpc: IVpc;
   securityGroup: ISecurityGroup;
 }
 
-export class AppLoadBalancer extends cdk.Construct {
+export class AppLoadBalancer extends Construct {
   readonly alb: IApplicationLoadBalancer;
   readonly targetGroup: ITargetGroup;
   readonly listener: IApplicationListener;
 
-  constructor(scope: cdk.Construct, id: string, props: IAlbProps) {
+  constructor(scope: Construct, id: string, props: IAlbProps) {
     super(scope, id);
     const { vpc, securityGroup } = props;
 

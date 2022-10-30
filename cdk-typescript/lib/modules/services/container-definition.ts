@@ -1,21 +1,21 @@
-import { Construct } from "@aws-cdk/core";
 import { getEnvContext } from "../../helper";
-import { IRepository } from "@aws-cdk/aws-ecr/lib/repository";
+import { IContainerSecretList } from "../../../model";
+import { ILogGroup } from "aws-cdk-lib/aws-logs";
 import {
-  ContainerDefinition as EcsContainerDefinition,
   ContainerImage,
   LogDriver,
-  Protocol,
   Secret,
-  TaskDefinition as EcsTaskDefinition,
-} from "@aws-cdk/aws-ecs";
-import { ILogGroup } from "@aws-cdk/aws-logs";
-import { IContainerSecretList } from "../../../model";
+  TaskDefinition,
+  ContainerDefinition as EcsContainerDefinition,
+  Protocol,
+} from "aws-cdk-lib/aws-ecs";
+import { Construct } from "constructs";
+import { IRepository } from "aws-cdk-lib/aws-ecr";
 
 interface IContainerDefinitionProps {
   repository: IRepository;
   parameterMap: IContainerSecretList;
-  taskDefinition: EcsTaskDefinition;
+  taskDefinition: TaskDefinition;
   logGroup: ILogGroup;
 }
 

@@ -1,18 +1,18 @@
-import * as cdk from "@aws-cdk/core";
-import { Stack, StackProps, Tags } from "@aws-cdk/core";
+import * as cdk from "aws-cdk-lib";
 import constants from "../constants";
-import { StringParameter } from "@aws-cdk/aws-ssm";
-import { ISecurityGroup, IVpc } from "@aws-cdk/aws-ec2";
 import { SecurityGroupNameType } from "../model";
 import { EcsService as CnisEcsService } from "./modules/services/ecs-service";
 import { getEnvContext } from "./helper";
-import { FargateTaskDefinition, ICluster } from "@aws-cdk/aws-ecs";
 import { ContainerDefinition } from "./modules/services/container-definition";
-import { IRole } from "@aws-cdk/aws-iam";
-import { IRepository } from "@aws-cdk/aws-ecr/lib/repository";
-import { ILogGroup } from "@aws-cdk/aws-logs";
 import { AppLoadBalancer as CnisAlb } from "./modules/loadbalancer/alb";
 import { parameterKeys } from "../params";
+import { ISecurityGroup, IVpc } from "aws-cdk-lib/aws-ec2";
+import { FargateTaskDefinition, ICluster } from "aws-cdk-lib/aws-ecs";
+import { IRole } from "aws-cdk-lib/aws-iam";
+import { IRepository } from "aws-cdk-lib/aws-ecr";
+import { ILogGroup } from "aws-cdk-lib/aws-logs";
+import { StringParameter } from "aws-cdk-lib/aws-ssm";
+import { Stack, StackProps, Tags } from "aws-cdk-lib";
 
 interface IAppStackProps extends StackProps {
   vpc: IVpc;

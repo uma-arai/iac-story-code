@@ -1,6 +1,7 @@
-import { Construct, RemovalPolicy } from "@aws-cdk/core";
-import { IRepository, Repository, TagMutability } from "@aws-cdk/aws-ecr";
 import constants from "../../../constants";
+import { TagMutability, IRepository, Repository } from "aws-cdk-lib/aws-ecr";
+import { Construct } from "constructs";
+import { RemovalPolicy } from "aws-cdk-lib";
 
 interface IContainerRepositoryProps {
   imported?: boolean; // 開発用途。基本的にはfalse

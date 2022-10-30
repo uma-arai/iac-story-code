@@ -1,11 +1,11 @@
-import * as cdk from "@aws-cdk/core";
-import { RemovalPolicy, Stack, Tags } from "@aws-cdk/core";
+import * as cdk from "aws-cdk-lib";
 import { ContainerRepository } from "./modules/repository/ecr";
 import constants from "../constants";
-import { IRepository } from "@aws-cdk/aws-ecr/lib/repository";
-import { ILogGroup, LogGroup, RetentionDays } from "@aws-cdk/aws-logs";
+import { ILogGroup, LogGroup, RetentionDays } from "aws-cdk-lib/aws-logs";
+import { RemovalPolicy, Tags } from "aws-cdk-lib";
+import { IRepository } from "aws-cdk-lib/aws-ecr";
 
-export class AppBaseStack extends Stack {
+export class AppBaseStack extends cdk.Stack {
   readonly repository: IRepository;
   readonly logGroup: ILogGroup;
 
