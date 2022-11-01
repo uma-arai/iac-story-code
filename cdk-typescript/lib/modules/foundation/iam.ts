@@ -1,4 +1,4 @@
-import constants from "../../../constants";
+import { env } from "../../../environment";
 import {
   Effect,
   IRole,
@@ -22,9 +22,9 @@ export class Iam extends Construct {
     // 今回はAmazonECSTaskExecutionRolePolicyなので問題なし
     const ecsTaskExecutionRole = new Role(
       this,
-      `${constants.ServicePrefix}-ecs-task-execution-role`,
+      `${env.global.servicePrefix}-ecs-task-execution-role`,
       {
-        roleName: `${constants.ServicePrefix}EcsTaskExecutionRole`,
+        roleName: `${env.global.servicePrefix}EcsTaskExecutionRole`,
         assumedBy: new ServicePrincipal("ecs-tasks"),
       }
     );
@@ -36,7 +36,7 @@ export class Iam extends Construct {
     new ManagedPolicy(this, "ssm-policy", {
       // WARNING: Descriptionを指定しておかないとDrift detectionにひっかかるので注意
       description: "Getting parameters in ssm parameter store for ECS",
-      managedPolicyName: `${constants.ServicePrefix}-GetParameterStorePolicy`,
+      managedPolicyName: `${env.global.servicePrefix}-GetParameterStorePolicy`,
       statements: [
         new PolicyStatement({
           effect: Effect.ALLOW,

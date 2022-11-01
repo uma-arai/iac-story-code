@@ -1,5 +1,5 @@
 import { getEnvContext } from "../../helper";
-import constants from "../../../constants";
+import { env } from "../../../environment";
 import {
   DeploymentControllerType,
   FargatePlatformVersion,
@@ -46,7 +46,7 @@ export class EcsService extends Construct {
 
     // ECSサービスの作成
     const service = new FargateService(this, `ecs-service`, {
-      serviceName: `${constants.ServicePrefix}-ecs-service-app`,
+      serviceName: `${env.global.servicePrefix}-ecs-service-app`,
       cluster,
       taskDefinition,
       platformVersion: FargatePlatformVersion.VERSION1_4,
@@ -81,7 +81,7 @@ export class EcsService extends Construct {
     };
 
     const tg = new ApplicationTargetGroup(this, `service-target-group`, {
-      targetGroupName: `${constants.ServicePrefix}-tg-app`,
+      targetGroupName: `${env.global.servicePrefix}-tg-app`,
       targets: [service],
       ...targetGroupProps,
     });

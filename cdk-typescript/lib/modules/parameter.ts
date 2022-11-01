@@ -1,4 +1,4 @@
-import constants from "../../constants";
+import { env } from "../../environment";
 import { IParameter, StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 
@@ -12,7 +12,7 @@ export class Parameter extends Construct {
     super(scope, id);
 
     this.parameters = new Map<string, IParameter>();
-    const prefix = constants.ServicePrefix;
+    const prefix = env.global.servicePrefix;
     Object.entries(props).map(([key, stringValue]) => {
       const param = new StringParameter(this, `${prefix}-${key}`, {
         parameterName: key,

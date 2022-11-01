@@ -45,8 +45,8 @@ export class ContainerDefinition extends Construct {
           // WARNING: ここでロググループを作ろうとするとecsTaskExecutionロールにlogs:createLogGroupの権限を追加しに行く動きになる
           // その場合、managementスタック→appスタックに依存するようになり、
           // 循環参照がおこってエラーとなるため注意
-          //new logs.LogGroup(this, `${constants.ServicePrefix}-logs`, {
-          //  logGroupName: `${constants.ServicePrefix}-ecs-container-logs`,
+          //new logs.LogGroup(this, `${env.global.servicePrefix}-logs`, {
+          //  logGroupName: `${env.global.servicePrefix}-ecs-container-logs`,
           //}),
           logGroup,
         }),

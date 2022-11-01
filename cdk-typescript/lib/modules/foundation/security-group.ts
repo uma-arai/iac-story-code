@@ -1,4 +1,4 @@
-import constants from "../../../constants";
+import { env } from "../../../environment";
 import { SecurityGroupNameType } from "../../../model";
 import {
   ISecurityGroup,
@@ -32,15 +32,15 @@ export class SecurityGroups extends Construct {
     // モジュールで作成するセキュリティグループ
     const data: SecurityGroupsIds = {
       ingress: {
-        securityGroupName: `${constants.ServicePrefix}-sg-public-ingress`,
+        securityGroupName: `${env.global.servicePrefix}-sg-public-ingress`,
         description: "HTTP for ingress",
       },
       egress: {
-        securityGroupName: `${constants.ServicePrefix}-sg-private-egress`,
+        securityGroupName: `${env.global.servicePrefix}-sg-private-egress`,
         description: "HTTPS for vpc endpoint",
       },
       app: {
-        securityGroupName: `${constants.ServicePrefix}-sg-private-app`,
+        securityGroupName: `${env.global.servicePrefix}-sg-private-app`,
         description: "HTTP for app",
       },
     };
@@ -52,7 +52,7 @@ export class SecurityGroups extends Construct {
       });
       Tags.of(sg).add(
         "Name",
-        inputs.securityGroupName || constants.ServicePrefix
+        inputs.securityGroupName || env.global.servicePrefix
       );
       this.securityGroups.set(key, sg);
     });

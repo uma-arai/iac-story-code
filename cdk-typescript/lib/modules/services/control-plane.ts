@@ -1,4 +1,4 @@
-import constants from "../../../constants";
+import { env } from "../../../environment";
 import { IVpc } from "aws-cdk-lib/aws-ec2";
 import { Construct } from "constructs";
 import { Cluster, ICluster } from "aws-cdk-lib/aws-ecs";
@@ -21,7 +21,7 @@ export class ControlPlane extends Construct {
     this.cluster = new Cluster(this, `control-plane`, {
       vpc,
       containerInsights: true,
-      clusterName: `${constants.ServicePrefix}-ecs-cluster-app`,
+      clusterName: `${env.global.servicePrefix}-ecs-cluster-app`,
     });
   }
 }

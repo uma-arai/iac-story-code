@@ -1,5 +1,4 @@
 import * as cdk from "aws-cdk-lib";
-import constants from "../constants";
 import { SecurityGroupNameType } from "../model";
 import { EcsService as CnisEcsService } from "./modules/services/ecs-service";
 import { getEnvContext } from "./helper";
@@ -13,6 +12,7 @@ import { IRepository } from "aws-cdk-lib/aws-ecr";
 import { ILogGroup } from "aws-cdk-lib/aws-logs";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Stack, StackProps, Tags } from "aws-cdk-lib";
+import { env } from "../environment";
 
 interface IAppStackProps extends StackProps {
   vpc: IVpc;
@@ -32,7 +32,7 @@ export class AppStack extends Stack {
     const { vpc, securityGroups, controlPlane } = props;
     const { executionRole, cluster, repository, logGroup } = controlPlane;
 
-    Tags.of(this).add("Project", constants.ProjectName);
+    Tags.of(this).add("Project", env.global.projectName);
     const { taskCpu, taskMemory } = getEnvContext(this).serviceParameters;
 
     // ALB
@@ -40,7 +40,7 @@ export class AppStack extends Stack {
     if (!securityGroup) {
       throw new Error("No alb security group is set");
     }
-    const albInfo = new CnisAlb(this, `${constants.ServicePrefix}-alb`, {
+    const albInfo = new CnisAlb(this, `${env.global.servicePrefix}-alb`, {
       vpc,
       securityGroup,
     });
@@ -51,7 +51,7 @@ export class AppStack extends Stack {
       cpu: taskCpu,
       executionRole,
 
-      family: `${constants.ServicePrefix}-ecs-taskdef-app`,
+      family: `${env.global.servicePrefix}-ecs-taskdef-app`,
     });
 
     // コンテナ定義の作成
@@ -74,7 +74,7 @@ export class AppStack extends Stack {
     if (!appSecurityGroup) {
       throw new Error("No application security group for cluster found");
     }
-    new CnisEcsService(this, `${constants.ServicePrefix}-ecs-service`, {
+    new CnisEcsService(this, `${env.global.servicePrefix}-ecs-service`, {
       cluster,
       serviceSecurityGroup: appSecurityGroup,
       taskDefinition,

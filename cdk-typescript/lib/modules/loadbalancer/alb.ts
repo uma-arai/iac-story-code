@@ -1,4 +1,3 @@
-import constants from "../../../constants";
 import {
   ApplicationListener,
   ApplicationLoadBalancer,
@@ -15,6 +14,7 @@ import {
 import { ISecurityGroup, IVpc } from "aws-cdk-lib/aws-ec2";
 import { Duration, Tags } from "aws-cdk-lib";
 import { Construct } from "constructs";
+import { env } from "../../../environment";
 
 export interface IAlbProps {
   vpc: IVpc;
@@ -31,7 +31,7 @@ export class AppLoadBalancer extends Construct {
     const { vpc, securityGroup } = props;
 
     this.alb = new ApplicationLoadBalancer(this, `alb`, {
-      loadBalancerName: `${constants.ServicePrefix}-alb-app`,
+      loadBalancerName: `${env.global.servicePrefix}-alb-app`,
       internetFacing: true,
       securityGroup,
       vpc,
@@ -46,7 +46,7 @@ export class AppLoadBalancer extends Construct {
     });
 
     // NOTE: リスナー作成時に何かしらターゲットグループを設定する必要があるためダミーを作成
-    const targetGroupName = `${constants.ServicePrefix}-alb-tg-dummy`;
+    const targetGroupName = `${env.global.servicePrefix}-alb-tg-dummy`;
     const targetGroup = new ApplicationTargetGroup(scope, `alb-tg-dummy`, {
       targetGroupName,
       healthCheck: {

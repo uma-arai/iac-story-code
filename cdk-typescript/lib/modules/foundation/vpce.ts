@@ -1,5 +1,5 @@
 import { SecurityGroupNameType } from "../../../model";
-import constants from "../../../constants";
+import { env } from "../../../environment";
 import {
   GatewayVpcEndpoint,
   GatewayVpcEndpointAwsService,
@@ -75,10 +75,10 @@ export class VpcEndpoint extends Construct {
     // NOTE: https://github.com/aws/aws-cdk/issues/8463
     // 2021/02現在、VPCエンドポイントにタグ付けがサポートされていないため下記はワークしない
     // しかしエラーにもならないので残しておく
-    Tags.of(ecrVpce).add("Name", `${constants.ServicePrefix}-vpce-ecr-api`);
-    Tags.of(ecrVpceDkr).add("Name", `${constants.ServicePrefix}-vpce-ecr-dkr`);
-    Tags.of(s3Vpce).add("Name", `${constants.ServicePrefix}-vpce-s3`);
-    Tags.of(clwVpce).add("Name", `${constants.ServicePrefix}-vpce-clw`);
-    Tags.of(ssmVpce).add("Name", `${constants.ServicePrefix}-vpce-ssm`);
+    Tags.of(ecrVpce).add("Name", `${env.global.servicePrefix}-vpce-ecr-api`);
+    Tags.of(ecrVpceDkr).add("Name", `${env.global.servicePrefix}-vpce-ecr-dkr`);
+    Tags.of(s3Vpce).add("Name", `${env.global.servicePrefix}-vpce-s3`);
+    Tags.of(clwVpce).add("Name", `${env.global.servicePrefix}-vpce-clw`);
+    Tags.of(ssmVpce).add("Name", `${env.global.servicePrefix}-vpce-ssm`);
   }
 }

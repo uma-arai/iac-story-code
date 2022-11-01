@@ -1,3 +1,4 @@
+
 # AWS CDKサンプルコード
 
 ## Overview
@@ -14,10 +15,10 @@ CDKを実行するための事前設定を行います。
 ### ツールのバージョン
 
 今回ハンズオン環境として利用するCloud9にはデフォルトでCDKがインストールされています。
-2021年6月17日現在、Cloud9インスタンスを新しく起動してインストールされているバージョンは次のとおりです。
+2022年11月1日現在、Cloud9インスタンスを新しく起動してインストールされているバージョンは次のとおりです。
 
-- AWS CDK: 1.108.1
-  - Node.js: v10.24.1
+- AWS CDK: 2.49.0 (build 793dd76)
+  - Node.js: v16.16.0
 
 本ハンズオンでは上記バージョンと筆者のローカル環境のバージョン（リポジトリ直下のREADME.mdのバージョン）で動作を確認しています。
 しかし、Cloud9起動時に利用するAMIはAWS側で管理されています。
@@ -35,10 +36,6 @@ $ pwd
 $ npm install
 > aws-sdk@2.903.0 postinstall /home/ec2-user/environment/iac-story-code/cdk-typescript/node_modules/aws-cdk/node_modules/aws-sdk
 > node scripts/check-node-version.js
-
-
-> cdk-typescript@0.1.0 postinstall /home/ec2-user/environment/iac-story-code/cdk-typescript
-> npx patch-package
 
 npx: installed 50 in 3.825s
 ︙

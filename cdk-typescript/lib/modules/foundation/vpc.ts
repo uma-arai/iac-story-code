@@ -1,9 +1,9 @@
-import constants from "../../../constants";
+import { env } from "../../../environment";
 import {
-  IVpc,
-  Vpc as CoreVpc,
-  SubnetConfiguration,
   IpAddresses,
+  IVpc,
+  SubnetConfiguration,
+  Vpc as CoreVpc,
 } from "aws-cdk-lib/aws-ec2";
 import { Construct } from "constructs";
 import { Tags } from "aws-cdk-lib";
@@ -33,6 +33,6 @@ export class Vpc extends Construct {
       }),
     });
 
-    Tags.of(this.vpc).add("Name", `${constants.ServicePrefix}-vpc`);
+    Tags.of(this.vpc).add("Name", `${env.global.servicePrefix}-vpc`);
   }
 }
