@@ -1,7 +1,7 @@
 import * as cdk from "aws-cdk-lib";
+import { Stack, StackProps, Tags } from "aws-cdk-lib";
 import { SecurityGroupNameType } from "../model";
 import { EcsService as CnisEcsService } from "./modules/services/ecs-service";
-import { getEnvContext } from "./helper";
 import { ContainerDefinition } from "./modules/services/container-definition";
 import { AppLoadBalancer as CnisAlb } from "./modules/loadbalancer/alb";
 import { parameterKeys } from "../params";
@@ -11,7 +11,6 @@ import { IRole } from "aws-cdk-lib/aws-iam";
 import { IRepository } from "aws-cdk-lib/aws-ecr";
 import { ILogGroup } from "aws-cdk-lib/aws-logs";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
-import { Stack, StackProps, Tags } from "aws-cdk-lib";
 import { env } from "../environment";
 
 interface IAppStackProps extends StackProps {
@@ -33,7 +32,7 @@ export class AppStack extends Stack {
     const { executionRole, cluster, repository, logGroup } = controlPlane;
 
     Tags.of(this).add("Project", env.global.projectName);
-    const { taskCpu, taskMemory } = getEnvContext(this).serviceParameters;
+    const { taskCpu, taskMemory } = env.cluster;
 
     // ALB
     const securityGroup = securityGroups.get(SecurityGroupNameType.ingress);

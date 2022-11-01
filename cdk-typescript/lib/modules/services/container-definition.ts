@@ -1,16 +1,16 @@
-import { getEnvContext } from "../../helper";
 import { IContainerSecretList } from "../../../model";
 import { ILogGroup } from "aws-cdk-lib/aws-logs";
 import {
+  ContainerDefinition as EcsContainerDefinition,
   ContainerImage,
   LogDriver,
+  Protocol,
   Secret,
   TaskDefinition,
-  ContainerDefinition as EcsContainerDefinition,
-  Protocol,
 } from "aws-cdk-lib/aws-ecs";
 import { Construct } from "constructs";
 import { IRepository } from "aws-cdk-lib/aws-ecr";
+import { env } from "../../../environment";
 
 interface IContainerDefinitionProps {
   repository: IRepository;
@@ -22,8 +22,7 @@ interface IContainerDefinitionProps {
 export class ContainerDefinition extends Construct {
   constructor(scope: Construct, id: string, props: IContainerDefinitionProps) {
     super(scope, id);
-    const { containerCpu, containerMemory } =
-      getEnvContext(scope).serviceParameters;
+    const { containerCpu, containerMemory } = env.cluster;
     const { repository, taskDefinition, parameterMap, logGroup } = props;
 
     const secrets: {

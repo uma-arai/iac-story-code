@@ -2,7 +2,7 @@ import { ICnisContext } from "../model";
 import { Construct } from "constructs";
 
 /**
- *
+ * @deprecated since 1.10 Contextではなく環境依存はコードに書くようにした
  * @param {Construct} scope
  * @param {string} stage
  * @param {string} key
@@ -17,7 +17,7 @@ export const getEnv = (scope: Construct, stage: string, key?: string): any => {
 };
 
 /**
- *
+ * @deprecated since 1.10 Contextではなく環境依存はコードに書くようにした
  * @param {Construct} scope
  * @returns {ICnisContext}
  */

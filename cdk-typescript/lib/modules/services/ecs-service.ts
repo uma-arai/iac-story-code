@@ -1,4 +1,3 @@
-import { getEnvContext } from "../../helper";
 import { env } from "../../../environment";
 import {
   DeploymentControllerType,
@@ -42,7 +41,7 @@ export class EcsService extends Construct {
       taskDefinition,
       listener,
     } = props;
-    const { desiredCount } = getEnvContext(scope).serviceParameters;
+    const { desiredCount } = env.cluster;
 
     // ECSサービスの作成
     const service = new FargateService(this, `ecs-service`, {
