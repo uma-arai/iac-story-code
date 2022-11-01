@@ -7,7 +7,7 @@ type EnvParamType = {
     projectName: string;
   };
   cluster: {
-    desiredCount: number;
+    desiredCount: 1 | 2 | 4;
     taskCpu: number;
     taskMemory: number;
     containerCpu: number;
