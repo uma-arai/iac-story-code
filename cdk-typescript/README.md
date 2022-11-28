@@ -50,19 +50,18 @@ $ pwd
 /home/ec2-user/environment/iac-story-code/cdk-typescript
 
 $ npm run setup
-> cdk-typescript@0.1.0 setup /home/ec2-user/environment/iac-story-code/cdk-typescript
+> cdk-typescript@1.1.0 setup
 > cdk bootstrap
 
  ⏳  Bootstrapping environment aws://xxxxxxxx/ap-northeast-1...
+Trusted accounts for deployment: (none)
+Trusted accounts for lookup: (none)
+Using default execution policy of 'arn:aws:iam::aws:policy/AdministratorAccess'. Pass '--cloudformation-execution-policies' to customize.
 CDKToolkit: creating CloudFormation changeset...
-[██████████████████████████████████████████████████████████] (3/3)
-
-
-
  ✅  Environment aws://xxxxxxxx/ap-northeast-1 bootstrapped.
 ```
 
-コマンド実行後、S3に[cdktoolkit]と名のつくS3バケットが生成されたことを確認してください。
+コマンド実行後、S3に[cdk-]と名のつくS3バケットが生成されたことを確認してください。
 
 
 ## CDKの実行
@@ -90,19 +89,26 @@ $ pwd
 
 $ npm run deploy:dev:appb
 
-> cdk-typescript@0.1.0 deploy:dev:appb /home/ec2-user/environment/iac-story-code/cdk-typescript
-> cdk deploy cnis-app-base --context env=dev
+> cdk-typescript@1.1.0 deploy:dev:appb
+> cdk deploy cnis-app-base
 
+✨  Synthesis time: 8.37s
+cnis-app-base: building assets...
+︙
+cnis-app-base: assets built
+︙
 cnis-app-base: deploying...
+︙
 cnis-app-base: creating CloudFormation changeset...
-[██████████████████████████████████████████████████████████] (4/4)
-
  ✅  cnis-app-base
+✨  Deployment time: 16.62s
 
 Outputs:
 ︙
 Stack ARN:
-arn:aws:cloudformation:ap-northeast-1:123456789012:stack/cnis-app-base/716d40e0-d03d-11eb-803a-0e15c04a62a9
+arn:aws:cloudformation:ap-northeast-1:123456789012:stack/cnis-app-base/xxxxx-xxx-xxx
+
+✨  Total time: 24.99s
 ```
 
 ECRができていることを確認してください。
@@ -116,9 +122,10 @@ $ pwd
 /home/ec2-user/environment/iac-story-code/cdk-typescript
 
 $ npm run deploy:dev:base
-> cdk-typescript@0.1.0 deploy:dev:base /home/ec2-user/environment/iac-story-code/cdk-typescript
-> cdk deploy cnis-infra --context env=dev
+> cdk-typescript@1.1.0 deploy:dev:base
+> cdk deploy cnis-infra
 :
+
 cnis-infra
 This deployment will make potentially sensitive changes according to your current security approval level (--require-approval broadening).
 Please confirm you intend to make the following modifications:
@@ -170,17 +177,15 @@ Security Group Changes
 
 Do you wish to deploy these changes (y/n)? y #"y"を入力してください
 cnis-infra: deploying...
-cnis-infra: creating CloudFormation changeset...
 ︙
-
  ✅  cnis-infra
+✨  Deployment time: 210.07s
 
 Outputs:
-cnis-infra.ExportsOutputFnGetAttcnissecurityGroupapp44B9640FGroupIdDD26EB74 = sg-0020ba4abccc3f8f2
 ︙
-
 Stack ARN:
-arn:aws:cloudformation:ap-northeast-1:123456789012:stack/cnis-infra/c05da5b0-d03c-11eb-ab2a-0a03c4f678f1
+arn:aws:cloudformation:ap-northeast-1:123456789012:stack/cnis-infra/xxxxx-xxx-xxx
+✨  Total time: 218.49s
 ```
 
 VPCやサブネット周りのリソースが作成できたことを確認してください。
@@ -233,22 +238,20 @@ $ pwd
 /home/ec2-user/environment/iac-story-code/cdk-typescript
 
 $ npm run deploy:dev:app
-> cdk-typescript@0.1.0 deploy:dev:app /home/ec2-user/environment/iac-story-code/cdk-typescript
-> cdk deploy cnis-app --context env=dev
+> cdk-typescript@1.1.0 deploy:dev:app
+> cdk deploy cnis-app
 
 Including dependency stacks: cnis-infra, cnis-app-base
 ︙
+✨  Synthesis time: 7.91s
+
 cnis-app-base
-cnis-app-base: deploying...
-
+cnis-app-base: building assets...
  ✅  cnis-app-base (no changes)
-
 ︙
 cnis-infra
 cnis-infra: deploying...
-
  ✅  cnis-infra (no changes)
-
 ︙
 IAM Statement Changes
 ┌───┬─────────────────────────────┬────────┬────────────────┬─────────────────────────────────┬───────────┐
@@ -264,10 +267,12 @@ cnis-app: creating CloudFormation changeset...
 [██████████████████████████████████████████████████████████] (10/10)
 
  ✅  cnis-app
+✨  Deployment time: 214.73s
 
 Stack ARN:
-arn:aws:cloudformation:ap-northeast-1:xxxxxxxx:stack/cnis-app/27861db0-d03f-11eb-96a0-0e9105d7f1cd
+arn:aws:cloudformation:ap-northeast-1:123456789012:stack/cnis-app/xxxxx-xxx-xxx
 
+✨  Total time: 222.64s
 ```
 
 スタック作成が完了したことを確認してください。
@@ -351,7 +356,7 @@ $ pwd
 
 $ npm run destroy:all
 
-> cdk-typescript@0.1.0 destroy:all /home/ec2-user/environment/iac-story-code/cdk-typescript
+> cdk-typescript@1.1.0 destroy:all
 > cdk destroy --all
 
 Are you sure you want to delete: cnis-app, cnis-infra, cnis-app-base (y/n)? y #"y"を入力してください
