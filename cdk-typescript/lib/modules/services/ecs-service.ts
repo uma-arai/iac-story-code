@@ -1,10 +1,11 @@
-import * as cdk from "@aws-cdk/core";
+import { env } from "../../../environment";
 import {
   DeploymentControllerType,
   FargatePlatformVersion,
   FargateService,
   ICluster,
-} from "@aws-cdk/aws-ecs";
+  TaskDefinition,
+} from "aws-cdk-lib/aws-ecs";
 import {
   ApplicationListenerRule,
   ApplicationProtocol,
@@ -13,11 +14,10 @@ import {
   ListenerAction,
   ListenerCondition,
   TargetType,
-} from "@aws-cdk/aws-elasticloadbalancingv2";
-import { ISecurityGroup, SelectedSubnets } from "@aws-cdk/aws-ec2";
-import { getEnvContext } from "../../helper";
-import constants from "../../../constants";
-import { TaskDefinition } from "@aws-cdk/aws-ecs/lib/base/task-definition";
+} from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import { ISecurityGroup, SelectedSubnets } from "aws-cdk-lib/aws-ec2";
+import { Construct } from "constructs";
+import { Duration } from "aws-cdk-lib";
 
 export interface IEcsServiceProps {
   cluster: ICluster;
@@ -30,8 +30,8 @@ export interface IEcsServiceProps {
   listener: IApplicationListener;
 }
 
-export class EcsService extends cdk.Construct {
-  constructor(scope: cdk.Construct, id: string, props: IEcsServiceProps) {
+export class EcsService extends Construct {
+  constructor(scope: Construct, id: string, props: IEcsServiceProps) {
     super(scope, id);
 
     const {
@@ -41,17 +41,17 @@ export class EcsService extends cdk.Construct {
       taskDefinition,
       listener,
     } = props;
-    const { desiredCount } = getEnvContext(scope).serviceParameters;
+    const { desiredCount } = env.cluster;
 
     // ECSサービスの作成
     const service = new FargateService(this, `ecs-service`, {
-      serviceName: `${constants.ServicePrefix}-ecs-service-app`,
+      serviceName: `${env.global.servicePrefix}-ecs-service-app`,
       cluster,
       taskDefinition,
       platformVersion: FargatePlatformVersion.VERSION1_4,
       assignPublicIp: false,
       enableECSManagedTags: true,
-      healthCheckGracePeriod: cdk.Duration.minutes(1),
+      healthCheckGracePeriod: Duration.minutes(1),
       desiredCount,
       securityGroups: [serviceSecurityGroup],
       vpcSubnets: selectedSubnet,
@@ -72,15 +72,15 @@ export class EcsService extends cdk.Construct {
       healthCheck: {
         healthyThresholdCount: 3,
         unhealthyThresholdCount: 2,
-        timeout: cdk.Duration.seconds(5),
-        interval: cdk.Duration.seconds(15),
+        timeout: Duration.seconds(5),
+        interval: Duration.seconds(15),
         path: "/healthcheck",
         healthyHttpCodes: "200",
       },
     };
 
     const tg = new ApplicationTargetGroup(this, `service-target-group`, {
-      targetGroupName: `${constants.ServicePrefix}-tg-app`,
+      targetGroupName: `${env.global.servicePrefix}-tg-app`,
       targets: [service],
       ...targetGroupProps,
     });

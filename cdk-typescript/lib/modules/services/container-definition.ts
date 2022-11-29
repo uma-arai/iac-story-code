@@ -1,29 +1,28 @@
-import { Construct } from "@aws-cdk/core";
-import { getEnvContext } from "../../helper";
-import { IRepository } from "@aws-cdk/aws-ecr/lib/repository";
+import { IContainerSecretList } from "../../../model";
+import { ILogGroup } from "aws-cdk-lib/aws-logs";
 import {
   ContainerDefinition as EcsContainerDefinition,
   ContainerImage,
   LogDriver,
   Protocol,
   Secret,
-  TaskDefinition as EcsTaskDefinition,
-} from "@aws-cdk/aws-ecs";
-import { ILogGroup } from "@aws-cdk/aws-logs";
-import { IContainerSecretList } from "../../../model";
+  TaskDefinition,
+} from "aws-cdk-lib/aws-ecs";
+import { Construct } from "constructs";
+import { IRepository } from "aws-cdk-lib/aws-ecr";
+import { env } from "../../../environment";
 
 interface IContainerDefinitionProps {
   repository: IRepository;
   parameterMap: IContainerSecretList;
-  taskDefinition: EcsTaskDefinition;
+  taskDefinition: TaskDefinition;
   logGroup: ILogGroup;
 }
 
 export class ContainerDefinition extends Construct {
   constructor(scope: Construct, id: string, props: IContainerDefinitionProps) {
     super(scope, id);
-    const { containerCpu, containerMemory } =
-      getEnvContext(scope).serviceParameters;
+    const { containerCpu, containerMemory } = env.cluster;
     const { repository, taskDefinition, parameterMap, logGroup } = props;
 
     const secrets: {
@@ -45,8 +44,8 @@ export class ContainerDefinition extends Construct {
           // WARNING: ここでロググループを作ろうとするとecsTaskExecutionロールにlogs:createLogGroupの権限を追加しに行く動きになる
           // その場合、managementスタック→appスタックに依存するようになり、
           // 循環参照がおこってエラーとなるため注意
-          //new logs.LogGroup(this, `${constants.ServicePrefix}-logs`, {
-          //  logGroupName: `${constants.ServicePrefix}-ecs-container-logs`,
+          //new logs.LogGroup(this, `${env.global.servicePrefix}-logs`, {
+          //  logGroupName: `${env.global.servicePrefix}-ecs-container-logs`,
           //}),
           logGroup,
         }),

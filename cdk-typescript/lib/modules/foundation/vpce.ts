@@ -1,4 +1,5 @@
-import { Construct, Tags } from "@aws-cdk/core";
+import { SecurityGroupNameType } from "../../../model";
+import { env } from "../../../environment";
 import {
   GatewayVpcEndpoint,
   GatewayVpcEndpointAwsService,
@@ -7,9 +8,9 @@ import {
   ISecurityGroup,
   IVpc,
   Port,
-} from "@aws-cdk/aws-ec2";
-import { SecurityGroupNameType } from "../../../model";
-import constants from "../../../constants";
+} from "aws-cdk-lib/aws-ec2";
+import { Construct } from "constructs";
+import { Tags } from "aws-cdk-lib";
 
 interface IVpcEndpointProps {
   vpc: IVpc;
@@ -74,10 +75,10 @@ export class VpcEndpoint extends Construct {
     // NOTE: https://github.com/aws/aws-cdk/issues/8463
     // 2021/02現在、VPCエンドポイントにタグ付けがサポートされていないため下記はワークしない
     // しかしエラーにもならないので残しておく
-    Tags.of(ecrVpce).add("Name", `${constants.ServicePrefix}-vpce-ecr-api`);
-    Tags.of(ecrVpceDkr).add("Name", `${constants.ServicePrefix}-vpce-ecr-dkr`);
-    Tags.of(s3Vpce).add("Name", `${constants.ServicePrefix}-vpce-s3`);
-    Tags.of(clwVpce).add("Name", `${constants.ServicePrefix}-vpce-clw`);
-    Tags.of(ssmVpce).add("Name", `${constants.ServicePrefix}-vpce-ssm`);
+    Tags.of(ecrVpce).add("Name", `${env.global.servicePrefix}-vpce-ecr-api`);
+    Tags.of(ecrVpceDkr).add("Name", `${env.global.servicePrefix}-vpce-ecr-dkr`);
+    Tags.of(s3Vpce).add("Name", `${env.global.servicePrefix}-vpce-s3`);
+    Tags.of(clwVpce).add("Name", `${env.global.servicePrefix}-vpce-clw`);
+    Tags.of(ssmVpce).add("Name", `${env.global.servicePrefix}-vpce-ssm`);
   }
 }

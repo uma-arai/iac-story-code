@@ -1,14 +1,15 @@
+import { env } from "../../../environment";
+import { SecurityGroupNameType } from "../../../model";
 import {
   ISecurityGroup,
   IVpc,
   Peer,
   Port,
   SecurityGroup,
-} from "@aws-cdk/aws-ec2";
-import { Construct, Tags } from "@aws-cdk/core";
-import { SecurityGroupProps } from "@aws-cdk/aws-ec2/lib/security-group";
-import constants from "../../../constants";
-import { SecurityGroupNameType } from "../../../model";
+  SecurityGroupProps,
+} from "aws-cdk-lib/aws-ec2";
+import { Construct } from "constructs";
+import { Tags } from "aws-cdk-lib";
 
 type SgType = Pick<SecurityGroupProps, "securityGroupName" | "description">;
 type SecurityGroupsIds = {
@@ -31,15 +32,15 @@ export class SecurityGroups extends Construct {
     // モジュールで作成するセキュリティグループ
     const data: SecurityGroupsIds = {
       ingress: {
-        securityGroupName: `${constants.ServicePrefix}-sg-public-ingress`,
+        securityGroupName: `${env.global.servicePrefix}-sg-public-ingress`,
         description: "HTTP for ingress",
       },
       egress: {
-        securityGroupName: `${constants.ServicePrefix}-sg-private-egress`,
+        securityGroupName: `${env.global.servicePrefix}-sg-private-egress`,
         description: "HTTPS for vpc endpoint",
       },
       app: {
-        securityGroupName: `${constants.ServicePrefix}-sg-private-app`,
+        securityGroupName: `${env.global.servicePrefix}-sg-private-app`,
         description: "HTTP for app",
       },
     };
@@ -51,7 +52,7 @@ export class SecurityGroups extends Construct {
       });
       Tags.of(sg).add(
         "Name",
-        inputs.securityGroupName || constants.ServicePrefix
+        inputs.securityGroupName || env.global.servicePrefix
       );
       this.securityGroups.set(key, sg);
     });

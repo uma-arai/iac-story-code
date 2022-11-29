@@ -1,5 +1,5 @@
-import constants from "./constants";
+import { env } from "./environment";
 
 export const parameterKeys = {
-  AppParams: `${constants.ServicePrefix}-ssm-param-${constants.ServicePrefix}-app`,
+  AppParams: `${env.global.servicePrefix}-ssm-param-${env.global.servicePrefix}-app`,
 };

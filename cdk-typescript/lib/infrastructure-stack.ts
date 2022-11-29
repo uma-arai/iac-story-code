@@ -1,16 +1,17 @@
-import { Construct, Stack, Tags } from "@aws-cdk/core";
-import { ISecurityGroup, IVpc, SubnetType } from "@aws-cdk/aws-ec2";
 import { Vpc as CnisVpc } from "./modules/foundation/vpc";
-import constants from "../constants";
 import { ControlPlane } from "./modules/services/control-plane";
 import { Parameter } from "./modules/parameter";
 import { SecurityGroups } from "./modules/foundation/security-group";
 import { VpcEndpoint } from "./modules/foundation/vpce";
-import { ICluster } from "@aws-cdk/aws-ecs";
 import { parameterKeys } from "../params";
 import { validateIpRange } from "./helper";
-import { IRole } from "@aws-cdk/aws-iam";
 import { Iam as BaseIam } from "./modules/foundation/iam";
+import { Stack, Tags } from "aws-cdk-lib";
+import { ISecurityGroup, IVpc, SubnetType } from "aws-cdk-lib/aws-ec2";
+import { IRole } from "aws-cdk-lib/aws-iam";
+import { Construct } from "constructs";
+import { ICluster } from "aws-cdk-lib/aws-ecs";
+import { env } from "../environment";
 
 export class CnisInfraStack extends Stack {
   readonly vpc: IVpc;
@@ -21,7 +22,7 @@ export class CnisInfraStack extends Stack {
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
-    Tags.of(this).add("Project", constants.ProjectName);
+    Tags.of(this).add("Project", env.global.projectName);
 
     // Network resources
     const ipRange = "10.0.0.0";
@@ -30,7 +31,7 @@ export class CnisInfraStack extends Stack {
     }
 
     const vpcCidr = `${ipRange}/16`;
-    const cnisVpc = new CnisVpc(this, `${constants.ServicePrefix}-vpc`, {
+    const cnisVpc = new CnisVpc(this, `${env.global.servicePrefix}-vpc`, {
       cidr: vpcCidr,
       subnetConfigurations: [
         {
@@ -39,11 +40,11 @@ export class CnisInfraStack extends Stack {
         },
         {
           name: "app",
-          subnetType: SubnetType.ISOLATED,
+          subnetType: SubnetType.PRIVATE_ISOLATED,
         },
         {
           name: "egress",
-          subnetType: SubnetType.ISOLATED,
+          subnetType: SubnetType.PRIVATE_ISOLATED,
         },
       ],
     });
@@ -51,7 +52,7 @@ export class CnisInfraStack extends Stack {
     // Security groups
     this.securityGroupList = new SecurityGroups(
       this,
-      `${constants.ServicePrefix}-securityGroup`,
+      `${env.global.servicePrefix}-securityGroup`,
       {
         vpc: cnisVpc.vpc,
       }
@@ -65,7 +66,7 @@ export class CnisInfraStack extends Stack {
     // ECS Cluster
     const controlPlane = new ControlPlane(
       this,
-      `${constants.ServicePrefix}-cluster`,
+      `${env.global.servicePrefix}-cluster`,
       {
         vpc: cnisVpc.vpc,
       }
@@ -74,7 +75,7 @@ export class CnisInfraStack extends Stack {
     // Parameter Store
     const parameters: Record<string, string> = {};
     parameters[parameterKeys.AppParams] = "Cloud Native IaC Story";
-    new Parameter(this, `${constants.ServicePrefix}-parameters`, parameters);
+    new Parameter(this, `${env.global.servicePrefix}-parameters`, parameters);
 
     // IAM
     const iam = new BaseIam(this, "iam");

@@ -1,6 +1,7 @@
-import { Construct, RemovalPolicy } from "@aws-cdk/core";
-import { IRepository, Repository, TagMutability } from "@aws-cdk/aws-ecr";
-import constants from "../../../constants";
+import { env } from "../../../environment";
+import { IRepository, Repository, TagMutability } from "aws-cdk-lib/aws-ecr";
+import { Construct } from "constructs";
+import { RemovalPolicy } from "aws-cdk-lib";
 
 interface IContainerRepositoryProps {
   imported?: boolean; // 開発用途。基本的にはfalse
@@ -13,7 +14,7 @@ export class ContainerRepository extends Construct {
     super(scope, id);
 
     const { imported } = props;
-    const repositoryName = `${constants.ServicePrefix}-ecr-app`;
+    const repositoryName = `${env.global.servicePrefix}-ecr-app`;
 
     // NOTE: 既存ECRを使いたい場合。基本的には新規で作るので開発用途。
     if (imported) {
